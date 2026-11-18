@@ -12,37 +12,49 @@ OpenCPN cares about are the same ones NOAA puts in an RNC catalogue:
 from __future__ import annotations
 
 import io
+import math
 import re
+import stat
 import zipfile
+from pathlib import PurePosixPath
 from typing import Iterable
 
 from cartas_raster.models import BsbInfo
 
 _LINE = re.compile(r"^([A-Z0-9]{2,3})/(.*)$")
+_CHUNK = 64 * 1024
+# Real DHN chart ZIPs seen in the wild are a directory plus .BSB/.KAP,
+# and the largest published file is about 2.5 MB compressed. These caps
+# sit far above that and stop a zip bomb before it is unpacked fully.
+MAX_UNCOMPRESSED_BYTES = 2 * 1024 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 100
+_CHART_SUFFIXES = {".bsb", ".kap"}
 
 
 class NotAChartZip(Exception):
     """The download is not a ZIP that contains a BSB or KAP chart."""
 
 
-def inspect_zip(data: bytes) -> BsbInfo:
+def inspect_zip(
+    data: bytes,
+    *,
+    max_uncompressed: int = MAX_UNCOMPRESSED_BYTES,
+    max_ratio: float = MAX_COMPRESSION_RATIO,
+) -> BsbInfo:
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
     except zipfile.BadZipFile as exc:
         raise NotAChartZip("o arquivo baixado não é um ZIP") from exc
-    names = archive.namelist()
-    chart_names = [
-        name
-        for name in names
-        if name.lower().endswith(".bsb") or name.lower().endswith(".kap")
-    ]
-    if not chart_names:
+    chart_payloads = _read_chart_members(
+        archive, max_uncompressed=max_uncompressed, max_ratio=max_ratio
+    )
+    if not chart_payloads:
         raise NotAChartZip("o ZIP não contém arquivo .BSB nem .KAP")
     # The .BSB index carries CHT/CED/NTM for the whole chart. Fall back to KAP.
-    ordered = sorted(chart_names, key=lambda name: (not name.lower().endswith(".bsb"), name))
+    ordered = sorted(chart_payloads, key=lambda item: (not item[0].lower().endswith(".bsb"), item[0]))
     merged: dict[str, dict[str, str]] = {}
-    for name in ordered:
-        text = _header_text(archive.read(name))
+    for name, payload in ordered:
+        text = _header_text(payload)
         parsed = _parse_header(text)
         for key, fields in parsed.items():
             merged.setdefault(key, {}).update(fields)
@@ -60,6 +72,94 @@ def inspect_zip(data: bytes) -> BsbInfo:
         ntm_edition=_clean(ntm.get("NE")),
         ntm_date=_clean(ntm.get("ND")),
     )
+
+
+def _read_chart_members(
+    archive: zipfile.ZipFile, *, max_uncompressed: int, max_ratio: float
+) -> list[tuple[str, bytes]]:
+    """Validate every member, then return the chart files read in bounded chunks.
+
+    The archive bytes are left untouched. Callers that publish a chart copy
+    the original download, not a repacked ZIP.
+    """
+    total = 0
+    charts: list[tuple[str, bytes]] = []
+    for info in archive.infolist():
+        _reject_unsafe_member(info, max_ratio=max_ratio)
+        if _is_directory(info):
+            continue
+        remaining = max_uncompressed - total
+        if info.file_size > remaining:
+            raise NotAChartZip(
+                f"tamanho descomprimido passa de {max_uncompressed} bytes em {info.filename}"
+            )
+        payload = _read_member(archive, info, remaining)
+        total += len(payload)
+        if total > max_uncompressed:
+            raise NotAChartZip(f"tamanho descomprimido passa de {max_uncompressed} bytes")
+        if PurePosixPath(info.filename.replace("\\", "/")).suffix.lower() in _CHART_SUFFIXES:
+            charts.append((info.filename, payload))
+    return charts
+
+
+def _reject_unsafe_member(info: zipfile.ZipInfo, *, max_ratio: float) -> None:
+    name = info.filename
+    if "\x00" in name:
+        raise NotAChartZip(f"nome de membro com byte NUL: {name!r}")
+    if _is_symlink(info):
+        raise NotAChartZip(f"symlink no ZIP: {name}")
+    normalized = name.replace("\\", "/")
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:", normalized):
+        raise NotAChartZip(f"caminho absoluto no ZIP: {name}")
+    parts = [part for part in normalized.split("/") if part not in ("", ".")]
+    if any(part == ".." for part in parts):
+        raise NotAChartZip(f"caminho com .. no ZIP: {name}")
+    if _is_directory(info):
+        return
+    suffix = PurePosixPath(normalized).suffix.lower()
+    if suffix not in _CHART_SUFFIXES:
+        raise NotAChartZip(f"extensão não permitida no ZIP: {name}")
+    ratio = _compression_ratio(info)
+    if ratio > max_ratio:
+        raise NotAChartZip(
+            f"taxa de compressão {ratio:.0f} acima de {max_ratio:.0f} em {name}"
+        )
+
+
+def _read_member(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limit: int) -> bytes:
+    chunks: list[bytes] = []
+    got = 0
+    with archive.open(info, "r") as handle:
+        while True:
+            block = handle.read(_CHUNK)
+            if not block:
+                break
+            got += len(block)
+            if got > limit or got > max(info.file_size, 0):
+                raise NotAChartZip(f"leitura de {info.filename} passou do limite")
+            chunks.append(block)
+    return b"".join(chunks)
+
+
+def _is_symlink(info: zipfile.ZipInfo) -> bool:
+    return stat.S_ISLNK(info.external_attr >> 16)
+
+
+def _is_directory(info: zipfile.ZipInfo) -> bool:
+    if info.is_dir() or info.filename.endswith(("/", "\\")):
+        return True
+    if stat.S_ISDIR(info.external_attr >> 16):
+        return True
+    # DOS directory flag with no Unix mode. DHN zips also use a trailing slash.
+    return bool(info.external_attr & 0x10) and (info.external_attr >> 16) == 0 and info.file_size == 0
+
+
+def _compression_ratio(info: zipfile.ZipInfo) -> float:
+    if info.file_size <= 0:
+        return 1.0
+    if info.compress_size <= 0:
+        return math.inf
+    return info.file_size / info.compress_size
 
 
 def _header_text(payload: bytes) -> str:

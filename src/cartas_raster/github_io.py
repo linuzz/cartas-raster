@@ -240,11 +240,38 @@ class GitHub:
             cwd=self.root,
         )
 
-    def cleanup_orphans(self, charts: dict) -> list[str]:
-        """Delete release assets the manifest does not reference."""
-        from cartas_raster.edition import orphan_asset_names
+    def cleanup_orphans(
+        self,
+        charts: dict,
+        *,
+        previous_chart_count: int | None = None,
+        max_deletions: int | None = None,
+        max_deletion_ratio: float | None = None,
+        min_retain_ratio: float | None = None,
+    ) -> list[str]:
+        """Delete release assets the manifest does not reference.
 
-        names = orphan_asset_names(charts, list(self.release_asset_sizes()))
+        Prints the deletion list first. Refuses, without deleting, when any
+        manifest entry lacks ``zip_filename``, when the chart count fell below
+        the retain ratio, or when the list is longer than the cap.
+        """
+        from cartas_raster.edition import OrphanCleanupRefused, assert_orphan_cleanup_allowed
+
+        release_names = list(self.release_asset_sizes())
+        try:
+            names = assert_orphan_cleanup_allowed(
+                charts,
+                release_names,
+                previous_chart_count=previous_chart_count,
+                max_deletions=max_deletions,
+                max_deletion_ratio=max_deletion_ratio,
+                min_retain_ratio=min_retain_ratio,
+            )
+        except OrphanCleanupRefused as exc:
+            print(f"Limpeza de órfãos recusada: {exc}", flush=True)
+            raise
+        preview = ", ".join(names) if names else "nenhum"
+        print(f"Limpeza de órfãos: {len(names)} asset(s) serão removidos: {preview}.", flush=True)
         for name in names:
             print(f"Removendo asset órfão {name}.", flush=True)
             self.delete_asset(name)

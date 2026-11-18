@@ -7,11 +7,19 @@ DHN sometimes leaves the previous ZIP in place and uploads the new edition as
 
 from __future__ import annotations
 
+import math
+import os
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 
 from cartas_raster.models import BsbInfo
+
+# A normal week deletes well under this. The historical plan cleanup removed 19
+# assets from a release of about 400, which stays inside both limits.
+DEFAULT_MAX_ORPHAN_DELETIONS = 25
+DEFAULT_MAX_ORPHAN_DELETION_RATIO = 0.10
+DEFAULT_MIN_MANIFEST_RETAIN_RATIO = 0.90
 
 _MIN_DT = datetime.min.replace(tzinfo=timezone.utc)
 
@@ -80,14 +88,103 @@ def manifest_has_same_bytes(entry: dict | None, zip_name: str, content_length: i
     )
 
 
+class OrphanCleanupRefused(RuntimeError):
+    """Deleting these release assets would be too large a change to do automatically."""
+
+
 def orphan_asset_names(charts: dict, release_names: list[str] | set[str]) -> list[str]:
-    """Release assets that the manifest no longer points at."""
+    """Release assets that the manifest no longer points at.
+
+    Every manifest entry must name its ``zip_filename``. A missing name is not
+    treated as "keep nothing": the caller refuses the cleanup instead.
+    """
     keep = set()
     for entry in charts.values():
         name = entry.get("zip_filename")
         if name:
             keep.add(name)
     return sorted(name for name in release_names if name not in keep)
+
+
+def orphan_deletion_cap(asset_count: int, absolute: int, ratio: float) -> int:
+    """The smaller of the absolute cap and ``ratio`` of the assets on the release."""
+    if asset_count <= 0:
+        return 0
+    return min(absolute, math.ceil(asset_count * ratio))
+
+
+def assert_orphan_cleanup_allowed(
+    charts: dict,
+    release_names: list[str] | set[str],
+    *,
+    previous_chart_count: int | None = None,
+    max_deletions: int | None = None,
+    max_deletion_ratio: float | None = None,
+    min_retain_ratio: float | None = None,
+) -> list[str]:
+    """Return the orphan names, or raise ``OrphanCleanupRefused`` before any delete.
+
+    ``max_deletions`` defaults to 25 (``MAX_ORPHAN_DELETIONS``).
+    ``max_deletion_ratio`` defaults to 0.10 (``MAX_ORPHAN_DELETION_RATIO``).
+    The effective cap is the smaller of the two. ``min_retain_ratio`` defaults
+    to 0.90 (``MIN_MANIFEST_RETAIN_RATIO``): the manifest after this run must
+    keep at least that share of ``previous_chart_count``.
+    """
+    absolute = _env_int(max_deletions, "MAX_ORPHAN_DELETIONS", DEFAULT_MAX_ORPHAN_DELETIONS)
+    ratio = _env_float(max_deletion_ratio, "MAX_ORPHAN_DELETION_RATIO", DEFAULT_MAX_ORPHAN_DELETION_RATIO)
+    retain = _env_float(min_retain_ratio, "MIN_MANIFEST_RETAIN_RATIO", DEFAULT_MIN_MANIFEST_RETAIN_RATIO)
+    missing = sorted(
+        str(chart_id)
+        for chart_id, entry in charts.items()
+        if not str((entry or {}).get("zip_filename") or "").strip()
+    )
+    if missing:
+        raise OrphanCleanupRefused(
+            "manifesto sem zip_filename em: " + ", ".join(missing) + ". Nada foi apagado."
+        )
+    names = orphan_asset_names(charts, release_names)
+    listed = ", ".join(names) if names else "(nenhum)"
+    if previous_chart_count:
+        floor = previous_chart_count * retain
+        if len(charts) < floor:
+            raise OrphanCleanupRefused(
+                f"manifesto ficou com {len(charts)} cartas, abaixo de {retain:.0%} "
+                f"de {previous_chart_count} ({floor:.1f}). "
+                f"Seriam removidos: {listed}. Nada foi apagado."
+            )
+    asset_count = len(list(release_names))
+    cap = orphan_deletion_cap(asset_count, absolute, ratio)
+    if len(names) > cap:
+        raise OrphanCleanupRefused(
+            f"{len(names)} exclusões passam do teto {cap} "
+            f"(mínimo entre {absolute} e {ratio:.0%} de {asset_count} assets). "
+            f"Seriam removidos: {listed}. Nada foi apagado."
+        )
+    return names
+
+
+def _env_int(value: int | None, name: str, default: int) -> int:
+    if value is not None:
+        return value
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError as exc:
+        raise OrphanCleanupRefused(f"{name} inválido: {raw}") from exc
+
+
+def _env_float(value: float | None, name: str, default: float) -> float:
+    if value is not None:
+        return value
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError as exc:
+        raise OrphanCleanupRefused(f"{name} inválido: {raw}") from exc
 
 
 def retire_absorbed(
