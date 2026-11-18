@@ -1172,10 +1172,10 @@
     <ntm_date>06/14/2022</ntm_date>
     <ntm_edition_last_correction>2019-53</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_21.zip</zipfile_location>
-    <zipfile_datetime>20250425_140848</zipfile_datetime>
-    <zipfile_datetime_iso8601>2025-04-25T14:08:48Z</zipfile_datetime_iso8601>
-    <zipfile_size>1393501</zipfile_size>
-    <target_filename>21.zip</target_filename>
+    <zipfile_datetime>20250916_121046</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-09-16T12:10:46Z</zipfile_datetime_iso8601>
+    <zipfile_size>1073042</zipfile_size>
+    <target_filename>21_2.zip</target_filename>
   </chart>
   <chart>
     <number>2101</number>
@@ -1242,15 +1242,15 @@
     <title>Da Barra do Canal S. Gonçalo às Porteiras (1:25097)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2008</ntm_edition>
+    <ntm_edition>2024</ntm_edition>
     <source_date>08/01/1964</source_date>
-    <ntm_date>12/30/2020</ntm_date>
-    <ntm_edition_last_correction>2008-90</ntm_edition_last_correction>
+    <ntm_date>01/14/2025</ntm_date>
+    <ntm_edition_last_correction>2024-303</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_2103.zip</zipfile_location>
-    <zipfile_datetime>20241202_133852</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:38:52Z</zipfile_datetime_iso8601>
-    <zipfile_size>918717</zipfile_size>
-    <target_filename>2103.zip</target_filename>
+    <zipfile_datetime>20250416_144722</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-16T14:47:22Z</zipfile_datetime_iso8601>
+    <zipfile_size>1168591</zipfile_size>
+    <target_filename>2103_0.zip</target_filename>
   </chart>
   <chart>
     <number>21030</number>
@@ -1317,15 +1317,15 @@
     <title>Saco do Rincão e Proximidades (1:25085)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2008</ntm_edition>
+    <ntm_edition>2025</ntm_edition>
     <source_date>09/19/1964</source_date>
-    <ntm_date>10/01/2020</ntm_date>
-    <ntm_edition_last_correction>2008-90</ntm_edition_last_correction>
+    <ntm_date>02/24/2025</ntm_date>
+    <ntm_edition_last_correction>2025-21</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_2106.zip</zipfile_location>
-    <zipfile_datetime>20241202_133847</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:38:47Z</zipfile_datetime_iso8601>
-    <zipfile_size>702945</zipfile_size>
-    <target_filename>2106.zip</target_filename>
+    <zipfile_datetime>20250225_114439</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-02-25T11:44:39Z</zipfile_datetime_iso8601>
+    <zipfile_size>894257</zipfile_size>
+    <target_filename>2106_0.zip</target_filename>
   </chart>
   <chart>
     <number>21060</number>
@@ -1334,13 +1334,13 @@
     <raster_edition>1</raster_edition>
     <ntm_edition>2024</ntm_edition>
     <source_date>09/28/2011</source_date>
-    <ntm_date>06/20/2024</ntm_date>
-    <ntm_edition_last_correction>2024-111</ntm_edition_last_correction>
+    <ntm_date>11/27/2024</ntm_date>
+    <ntm_edition_last_correction>2024-297</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_21060.zip</zipfile_location>
-    <zipfile_datetime>20241202_134148</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:48Z</zipfile_datetime_iso8601>
-    <zipfile_size>1034940</zipfile_size>
-    <target_filename>21060.zip</target_filename>
+    <zipfile_datetime>20250415_123947</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-15T12:39:47Z</zipfile_datetime_iso8601>
+    <zipfile_size>1076267</zipfile_size>
+    <target_filename>21060_0.zip</target_filename>
   </chart>
   <chart>
     <number>2107</number>
@@ -1362,15 +1362,15 @@
     <title>Do Cabo Frio ao Cabo de Santa Marta Grande (1:1000000)</title>
     <source_edition>2</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <ntm_edition>2025</ntm_edition>
     <source_date>12/13/2003</source_date>
-    <ntm_date>06/20/2024</ntm_date>
-    <ntm_edition_last_correction>2024-111</ntm_edition_last_correction>
+    <ntm_date>07/17/2025</ntm_date>
+    <ntm_edition_last_correction>2025-116-119</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_21070.zip</zipfile_location>
-    <zipfile_datetime>20241202_134148</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:48Z</zipfile_datetime_iso8601>
-    <zipfile_size>1234991</zipfile_size>
-    <target_filename>21070.zip</target_filename>
+    <zipfile_datetime>20260108_174447</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-01-08T17:44:47Z</zipfile_datetime_iso8601>
+    <zipfile_size>1091214</zipfile_size>
+    <target_filename>21070_2.zip</target_filename>
   </chart>
   <chart>
     <number>2108</number>
@@ -1495,29 +1495,32 @@
   <chart>
     <number>21300</number>
     <title>Do Cabo Norte ao Cabo Maguari (1:300000)</title>
-    <source_edition>2</source_edition>
+    <source_edition>3</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
-    <source_date>08/15/2020</source_date>
-    <ntm_date>10/11/2024</ntm_date>
-    <ntm_edition_last_correction>2024.177</ntm_edition_last_correction>
+    <ntm_edition>2026</ntm_edition>
+    <source_date>09/28/2025</source_date>
+    <ntm_date>08/10/2026</ntm_date>
+    <ntm_edition_last_correction>2026-73</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_21300.zip</zipfile_location>
-    <zipfile_datetime>20241202_134211</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:11Z</zipfile_datetime_iso8601>
-    <zipfile_size>1754637</zipfile_size>
-    <target_filename>21300.zip</target_filename>
+    <zipfile_datetime>20260811_141935</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-08-11T14:19:35Z</zipfile_datetime_iso8601>
+    <zipfile_size>681049</zipfile_size>
+    <target_filename>21300_1.zip</target_filename>
   </chart>
   <chart>
     <number>2133</number>
     <title>Da Ponta Grossa a Porto Alegre (1:25000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
+    <ntm_edition>2024</ntm_edition>
     <source_date>09/28/2021</source_date>
+    <ntm_date>12/05/2024</ntm_date>
+    <ntm_edition_last_correction>2024-303</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_2133.zip</zipfile_location>
-    <zipfile_datetime>20241202_133931</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:39:31Z</zipfile_datetime_iso8601>
-    <zipfile_size>1017090</zipfile_size>
-    <target_filename>2133.zip</target_filename>
+    <zipfile_datetime>20250728_191712</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-07-28T19:17:12Z</zipfile_datetime_iso8601>
+    <zipfile_size>1281895</zipfile_size>
+    <target_filename>2133_0.zip</target_filename>
   </chart>
   <chart>
     <number>2140</number>
@@ -1586,13 +1589,13 @@
     <raster_edition>1</raster_edition>
     <ntm_edition>2019</ntm_edition>
     <source_date>04/20/2004</source_date>
-    <ntm_date>02/12/2019</ntm_date>
+    <ntm_date>01/09/2026</ntm_date>
     <ntm_edition_last_correction>2019-25</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_21700.zip</zipfile_location>
-    <zipfile_datetime>20241202_133709</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:37:09Z</zipfile_datetime_iso8601>
-    <zipfile_size>772536</zipfile_size>
-    <target_filename>21700.zip</target_filename>
+    <zipfile_datetime>20260109_131838</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-01-09T13:18:38Z</zipfile_datetime_iso8601>
+    <zipfile_size>1134648</zipfile_size>
+    <target_filename>21700_0.zip</target_filename>
   </chart>
   <chart>
     <number>21800</number>
@@ -1629,15 +1632,15 @@
     <title>Atol das Rocas e Arquipélago de Fernando de Noronha (1:300000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2021</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>02/15/2005</source_date>
-    <ntm_date>04/14/2021</ntm_date>
-    <ntm_edition_last_correction>2021-26</ntm_edition_last_correction>
+    <ntm_date>08/25/2026</ntm_date>
+    <ntm_edition_last_correction>2026-85</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_22000.zip</zipfile_location>
-    <zipfile_datetime>20241202_133902</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:39:02Z</zipfile_datetime_iso8601>
-    <zipfile_size>878596</zipfile_size>
-    <target_filename>22000.zip</target_filename>
+    <zipfile_datetime>20260826_140112</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-08-26T14:01:12Z</zipfile_datetime_iso8601>
+    <zipfile_size>628075</zipfile_size>
+    <target_filename>22000_0.zip</target_filename>
   </chart>
   <chart>
     <number>221</number>
@@ -1658,16 +1661,16 @@
     <number>22100</number>
     <title>Do Cabo Calcanhar a Cabedelo (1:300000)</title>
     <source_edition>1</source_edition>
-    <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <raster_edition>4</raster_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>06/17/2005</source_date>
-    <ntm_date>08/28/2024</ntm_date>
-    <ntm_edition_last_correction>2024-176</ntm_edition_last_correction>
+    <ntm_date>11/11/2026</ntm_date>
+    <ntm_edition_last_correction>2026-162</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_22100.zip</zipfile_location>
-    <zipfile_datetime>20241202_134202</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:02Z</zipfile_datetime_iso8601>
-    <zipfile_size>1241527</zipfile_size>
-    <target_filename>22100.zip</target_filename>
+    <zipfile_datetime>20261117_134016</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-11-17T13:40:16Z</zipfile_datetime_iso8601>
+    <zipfile_size>1168606</zipfile_size>
+    <target_filename>22100_0.zip</target_filename>
   </chart>
   <chart>
     <number>222</number>
@@ -1688,16 +1691,16 @@
     <number>22200</number>
     <title>De Cabedelo a Maceió (1:300000)</title>
     <source_edition>1</source_edition>
-    <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <raster_edition>4</raster_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>09/20/2005</source_date>
-    <ntm_date>10/31/2024</ntm_date>
-    <ntm_edition_last_correction>2024-274</ntm_edition_last_correction>
+    <ntm_date>11/11/2026</ntm_date>
+    <ntm_edition_last_correction>2026-162</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_22200.zip</zipfile_location>
-    <zipfile_datetime>20241202_134217</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:17Z</zipfile_datetime_iso8601>
-    <zipfile_size>1671452</zipfile_size>
-    <target_filename>22200.zip</target_filename>
+    <zipfile_datetime>20261117_134127</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-11-17T13:41:27Z</zipfile_datetime_iso8601>
+    <zipfile_size>1570515</zipfile_size>
+    <target_filename>22200_1.zip</target_filename>
   </chart>
   <chart>
     <number>22300</number>
@@ -1811,13 +1814,13 @@
     <raster_edition>1</raster_edition>
     <ntm_edition>2024</ntm_edition>
     <source_date>02/25/2008</source_date>
-    <ntm_date>07/04/2024</ntm_date>
-    <ntm_edition_last_correction>2024-137</ntm_edition_last_correction>
+    <ntm_date>11/27/2024</ntm_date>
+    <ntm_edition_last_correction>2024-297</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_23000.zip</zipfile_location>
-    <zipfile_datetime>20241202_134149</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:49Z</zipfile_datetime_iso8601>
-    <zipfile_size>1532738</zipfile_size>
-    <target_filename>23000.zip</target_filename>
+    <zipfile_datetime>20250415_124414</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-15T12:44:14Z</zipfile_datetime_iso8601>
+    <zipfile_size>1604047</zipfile_size>
+    <target_filename>23000_0.zip</target_filename>
   </chart>
   <chart>
     <number>231</number>
@@ -1839,15 +1842,15 @@
     <title>Do Rio de Janeiro a Santos (1:300000)</title>
     <source_edition>2</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2023</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>05/25/2010</source_date>
-    <ntm_date>11/29/2023</ntm_date>
-    <ntm_edition_last_correction>2023-179</ntm_edition_last_correction>
+    <ntm_date>09/14/2026</ntm_date>
+    <ntm_edition_last_correction>2026-99</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_23100.zip</zipfile_location>
-    <zipfile_datetime>20241202_134108</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:08Z</zipfile_datetime_iso8601>
-    <zipfile_size>1451552</zipfile_size>
-    <target_filename>23100.zip</target_filename>
+    <zipfile_datetime>20260914_175440</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-09-14T17:54:40Z</zipfile_datetime_iso8601>
+    <zipfile_size>1552224</zipfile_size>
+    <target_filename>23100_1.zip</target_filename>
   </chart>
   <chart>
     <number>232</number>
@@ -1869,15 +1872,15 @@
     <title>De Santos a Paranaguá (1:300000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2023</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>03/05/2010</source_date>
-    <ntm_date>11/29/2023</ntm_date>
-    <ntm_edition_last_correction>2023-179</ntm_edition_last_correction>
+    <ntm_date>09/14/2026</ntm_date>
+    <ntm_edition_last_correction>2026-99</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_23200.zip</zipfile_location>
-    <zipfile_datetime>20241202_134109</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:09Z</zipfile_datetime_iso8601>
-    <zipfile_size>1164986</zipfile_size>
-    <target_filename>23200.zip</target_filename>
+    <zipfile_datetime>20260914_175555</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-09-14T17:55:55Z</zipfile_datetime_iso8601>
+    <zipfile_size>1243207</zipfile_size>
+    <target_filename>23200_1.zip</target_filename>
   </chart>
   <chart>
     <number>233</number>
@@ -1914,15 +1917,15 @@
     <title>De Imbituba a Pinhal (1:300000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2020</ntm_edition>
+    <ntm_edition>2025</ntm_edition>
     <source_date>09/28/2009</source_date>
-    <ntm_date>11/09/2020</ntm_date>
-    <ntm_edition_last_correction>2020-100</ntm_edition_last_correction>
+    <ntm_date>09/04/2025</ntm_date>
+    <ntm_edition_last_correction>2025-141</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_23400.zip</zipfile_location>
-    <zipfile_datetime>20241202_133849</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:38:49Z</zipfile_datetime_iso8601>
-    <zipfile_size>1042074</zipfile_size>
-    <target_filename>23400.zip</target_filename>
+    <zipfile_datetime>20250923_170514</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-09-23T17:05:14Z</zipfile_datetime_iso8601>
+    <zipfile_size>952114</zipfile_size>
+    <target_filename>23400_0.zip</target_filename>
   </chart>
   <chart>
     <number>23500</number>
@@ -1974,30 +1977,30 @@
     <title>Da Ilha dos Porcos à Baía do Vieira Grande (Braço Sul do Rio Amazonas) (1:80000)</title>
     <source_edition>3</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2025</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>01/05/2012</source_date>
-    <ntm_date>02/17/2025</ntm_date>
-    <ntm_edition_last_correction>2025-13</ntm_edition_last_correction>
+    <ntm_date>03/03/2026</ntm_date>
+    <ntm_edition_last_correction>2026-9</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_242.zip</zipfile_location>
-    <zipfile_datetime>20250225_120538</zipfile_datetime>
-    <zipfile_datetime_iso8601>2025-02-25T12:05:38Z</zipfile_datetime_iso8601>
-    <zipfile_size>1942557</zipfile_size>
-    <target_filename>242.zip</target_filename>
+    <zipfile_datetime>20260306_173410</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-03-06T17:34:10Z</zipfile_datetime_iso8601>
+    <zipfile_size>1625272</zipfile_size>
+    <target_filename>242_3.zip</target_filename>
   </chart>
   <chart>
     <number>243</number>
     <title>Da Ilha Ituquara à Ilha dos Porcos (1:79994)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2012</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>09/07/1977</source_date>
-    <ntm_date>08/25/2022</ntm_date>
-    <ntm_edition_last_correction>2012-136</ntm_edition_last_correction>
+    <ntm_date>02/25/2026</ntm_date>
+    <ntm_edition_last_correction>2026-9</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_243.zip</zipfile_location>
-    <zipfile_datetime>20241202_134004</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:40:04Z</zipfile_datetime_iso8601>
-    <zipfile_size>1635775</zipfile_size>
-    <target_filename>243.zip</target_filename>
+    <zipfile_datetime>20260310_165402</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-03-10T16:54:02Z</zipfile_datetime_iso8601>
+    <zipfile_size>1652197</zipfile_size>
+    <target_filename>243_1.zip</target_filename>
   </chart>
   <chart>
     <number>244</number>
@@ -2166,45 +2169,45 @@
     <title>De Mosqueiro a Vila do Conde (1:75000)</title>
     <source_edition>4</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>12/05/2014</source_date>
-    <ntm_date>08/08/2024</ntm_date>
-    <ntm_edition_last_correction>2024-157</ntm_edition_last_correction>
+    <ntm_date>08/25/2026</ntm_date>
+    <ntm_edition_last_correction>2026-81</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_304.zip</zipfile_location>
-    <zipfile_datetime>20241202_134156</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:56Z</zipfile_datetime_iso8601>
-    <zipfile_size>2236010</zipfile_size>
-    <target_filename>304.zip</target_filename>
+    <zipfile_datetime>20260826_134831</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-08-26T13:48:31Z</zipfile_datetime_iso8601>
+    <zipfile_size>1735799</zipfile_size>
+    <target_filename>304_4.zip</target_filename>
   </chart>
   <chart>
     <number>305</number>
     <title>Da Ilha do Capim à Ilha da Conceição (1:100000)</title>
     <source_edition>5</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2017</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>09/28/2014</source_date>
-    <ntm_date>09/25/2017</ntm_date>
-    <ntm_edition_last_correction>2017.113</ntm_edition_last_correction>
+    <ntm_date>03/03/2026</ntm_date>
+    <ntm_edition_last_correction>2026-9</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_305.zip</zipfile_location>
-    <zipfile_datetime>20241202_133704</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:37:04Z</zipfile_datetime_iso8601>
-    <zipfile_size>912320</zipfile_size>
-    <target_filename>305.zip</target_filename>
+    <zipfile_datetime>20260310_171440</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-03-10T17:14:40Z</zipfile_datetime_iso8601>
+    <zipfile_size>1362688</zipfile_size>
+    <target_filename>305_0.zip</target_filename>
   </chart>
   <chart>
     <number>306</number>
     <title>Da Ilha da Conceição aos Estreitos (1:99960)</title>
     <source_edition>2</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>08/30/1993</source_date>
-    <ntm_date>04/17/2024</ntm_date>
-    <ntm_edition_last_correction>2024-52</ntm_edition_last_correction>
+    <ntm_date>03/09/2026</ntm_date>
+    <ntm_edition_last_correction>2026-9</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_306.zip</zipfile_location>
-    <zipfile_datetime>20241202_134138</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:41:38Z</zipfile_datetime_iso8601>
-    <zipfile_size>968703</zipfile_size>
-    <target_filename>306.zip</target_filename>
+    <zipfile_datetime>20260310_172301</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-03-10T17:23:01Z</zipfile_datetime_iso8601>
+    <zipfile_size>859454</zipfile_size>
+    <target_filename>306_0.zip</target_filename>
   </chart>
   <chart>
     <number>320</number>
