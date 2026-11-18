@@ -1,9 +1,15 @@
 {
   "charts": [
     {
+      "chart_id": "1001PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-144",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:12.500 – Terminal Portuário de Sergipe Marítimo Inácio Barbosa – Carta 1001 PL"
+    },
+    {
       "chart_id": "1108PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-125",
-      "reason": "o painel usa o mesmo ZIP da carta 1108",
+      "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:8.000 – Porto de São Roque – Carta 1108 PL"
     },
     {
@@ -13,10 +19,52 @@
       "title": "Carta Nautica Raster 1:1.000 – Arquipélago de São Pedro e São Paulo – Carta 11 PL"
     },
     {
+      "chart_id": "1401PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-171",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:7.500 – Porto de Vitória (Canal de Acesso) – Carta 1401 PL"
+    },
+    {
+      "chart_id": "1404PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-383",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Terminal da Pta. do Ubu – Carta 1404 PL"
+    },
+    {
+      "chart_id": "1420PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/proximidades-de-barra-do-riacho",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Terminal de Barra do Riacho – Carta 1420 PL"
+    },
+    {
+      "chart_id": "1507PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-44",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:8.000 – Porto de Imbetiba – Carta 1507 PL"
+    },
+    {
       "chart_id": "1531",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav/cartas-raster",
       "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:6.500 – Ilha do Boqueirão e Adjacências (Baía de Guanabara) – Carta 1531"
+    },
+    {
+      "chart_id": "1623PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-30",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:12.000 – Complexo Naval de Itaguaí – Carta 1623 PL"
+    },
+    {
+      "chart_id": "1631PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/baia-da-ilha-grande-parte-central",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Enseadas de Sítio Forte e Araçatuba – Carta 1631 PL"
+    },
+    {
+      "chart_id": "1633PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-366",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Baía de Parati e Adjacências – Carta 1633 PL"
     },
     {
       "chart_id": "1635PL",
@@ -85,6 +133,12 @@
       "title": "Carta Nautica Raster 1:15.000 – Canal de Acesso ao Teminal Santa Clara – Carta 2113 PL"
     },
     {
+      "chart_id": "21300PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/do-cabo-norte-ao-cabo-maguari",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:200.000 –Arco Lamoso da Barra Norte – Carta 21300 PL"
+    },
+    {
       "chart_id": "2140APL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
       "reason": "nenhum ZIP encontrado para o número da carta",
@@ -125,6 +179,12 @@
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/ilha-da-trindade",
       "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:200.000 – Ilha da Trindade e Martins Vaz – Carta 21B PL"
+    },
+    {
+      "chart_id": "23100PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-60",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Ilha de Alcatrazes – Carta 23100 PL"
     },
     {
       "chart_id": "25121APL",
@@ -175,6 +235,12 @@
       "title": "Carta Nautica Raster 1:50.000 – Passagem do Mandií – Carta 305B PL"
     },
     {
+      "chart_id": "306PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-338",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Curralinho – Carta 306 PL"
+    },
+    {
       "chart_id": "3330",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-334",
       "reason": "nenhum ZIP encontrado para o número da carta",
@@ -217,9 +283,15 @@
       "title": "Carta Nautica Raster 1:10.000 – Almeirim – Carta 4016 PL"
     },
     {
+      "chart_id": "4023PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-113",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Óbidos – Carta 4023 PL"
+    },
+    {
       "chart_id": "4024PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-114",
-      "reason": "o painel usa o mesmo ZIP da carta 4024",
+      "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:25.000 – Paraná de Juruti – Carta 4024 PL"
     },
     {
@@ -231,7 +303,7 @@
     {
       "chart_id": "4026PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-153",
-      "reason": "o painel usa o mesmo ZIP da carta 4026",
+      "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:10.000 – Parintins – Carta 4026 PL"
     },
     {
@@ -299,6 +371,12 @@
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-130",
       "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:10.000 – Gurupá – Carta 4102AB PL"
+    },
+    {
+      "chart_id": "414PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-28",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:7.500 – Estreito dos Coqueiros - Canal de Acesso ao Terminal da Alumar – Carta 414 PL"
     },
     {
       "chart_id": "4150-HS-B1",
@@ -565,6 +643,12 @@
       "title": "Carta Nautica Raster 1:25.000 – Tucuruí – Carta 4366 PL"
     },
     {
+      "chart_id": "4381APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-167",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Ponta de Surucuá – Carta 4381A PL"
+    },
+    {
       "chart_id": "4381B",
       "page_url": "https://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/2026-03/CAT-15ED-2026-2030%20-FOL4-2026_rev3244.pdf",
       "reason": "nenhum ZIP encontrado para o número da carta",
@@ -597,8 +681,20 @@
     {
       "chart_id": "4418PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-22",
-      "reason": "o painel usa o mesmo ZIP da carta 4418",
+      "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:12.500 – Porto Trombetas – Carta 4418 PL"
+    },
+    {
+      "chart_id": "4733PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/do-porto-curuca-ilha-dos-marmelos",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Passagem Marmelos – Carta 4733 PL"
+    },
+    {
+      "chart_id": "4736PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/da-costa-valparaiso-ilha-da-meditacao",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Passagem Baianos – Carta 4736 PL"
     },
     {
       "chart_id": "4749PL",
@@ -607,10 +703,28 @@
       "title": "Carta Nautica Raster 1:20.000 – Passagem Abelha – Carta 4749 PL"
     },
     {
+      "chart_id": "4753PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/do-porto-de-amparo-porto-velho",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Terminal Ganeleiro De Porto Velho – Carta 4753 PL"
+    },
+    {
+      "chart_id": "515PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-124",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Porto de Luís Correia – Carta 515 PL"
+    },
+    {
       "chart_id": "51PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/atol-das-rocas",
       "reason": "nenhum ZIP encontrado para o número da carta",
       "title": "Carta Nautica Raster 1:20.000 – Atol das Rocas – Carta 51 PL"
+    },
+    {
+      "chart_id": "52PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-120",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:30.000 – Arquipélago de Fernando de Noronha – Carta 52 PL"
     },
     {
       "chart_id": "920PL",
