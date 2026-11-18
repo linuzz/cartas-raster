@@ -42,7 +42,7 @@ class GetResult:
 class UrllibTransport:
     user_agent: str = USER_AGENT
     timeout: float = 60.0
-    min_interval: float = 0.35
+    min_interval: float = 0.5
     retries: int = 4
     _last: float = field(default=0.0, init=False)
     _ssl: ssl.SSLContext = field(init=False)

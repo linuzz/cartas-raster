@@ -9,8 +9,8 @@ from cartas_raster.pipeline import edition_label
 MARKER = "<!-- cartas-raster chart_id={chart_id} sha256={sha256} -->"
 
 
-def proposal_document(proposed: dict, previous: dict | None) -> dict:
-    return {
+def proposal_document(proposed: dict, previous: dict | None, retire_chart_ids: list[str] | None = None) -> dict:
+    document = {
         "chart_id": proposed["chart_id"],
         "title": proposed["title"],
         "source_url": proposed["source_url"],
@@ -18,13 +18,16 @@ def proposal_document(proposed: dict, previous: dict | None) -> dict:
         "previous": _summary(previous) if previous else None,
         "proposed": proposed,
     }
+    if retire_chart_ids:
+        document["retire_chart_ids"] = list(retire_chart_ids)
+    return document
 
 
 def pull_request_title(proposed: dict) -> str:
     return f"Carta {proposed['chart_id']} — {proposed['title']}"
 
 
-def pull_request_body(proposed: dict, previous: dict | None, repository: str) -> str:
+def pull_request_body(proposed: dict, previous: dict | None, repository: str, retire: list[str] | None = None) -> str:
     kind = "Atualização" if previous else "Carta nova"
     lines = [
         f"## {kind}: carta {proposed['chart_id']}",
@@ -40,6 +43,12 @@ def pull_request_body(proposed: dict, previous: dict | None, repository: str) ->
     ]
     if proposed.get("page_url"):
         lines.append(f"- **Página no CHM:** {proposed['page_url']}")
+    if retire:
+        lines.append(
+            "- **Entradas que saem do catálogo:** "
+            + ", ".join(retire)
+            + " (o ZIP delas passa a ser a edição escolhida, ou era uma edição mais antiga)."
+        )
     lines.extend(
         [
             "",

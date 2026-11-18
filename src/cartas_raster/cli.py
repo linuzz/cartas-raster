@@ -14,6 +14,14 @@ from pathlib import Path
 from cartas_raster.catalog import asset_name
 from cartas_raster.chartdldr import assert_plugin_compatible
 from cartas_raster.dhn import DhnCatalog
+from cartas_raster.edition import (
+    choose_newest,
+    is_newer,
+    manifest_has_same_bytes,
+    retire_absorbed,
+    view_from_bsb,
+    view_from_manifest,
+)
 from cartas_raster.errors import SourceLayoutError
 from cartas_raster.github_io import GitHub, SubprocessRunner, commit_paths, push_head
 from cartas_raster.http_client import UrllibTransport
@@ -26,7 +34,6 @@ from cartas_raster.store import (
     PROPOSALS_DIR,
     UNRESOLVED_PATH,
     add_rejection,
-    headers_match,
     load_manifest,
     load_overrides,
     load_rejected,
@@ -94,11 +101,14 @@ def run_update(args) -> int:
     discovery = catalog.discover()
     print(
         f"Índice: {discovery.index_count} registros; "
-        f"{len(discovery.files)} ZIPs encontrados; "
-        f"{len(discovery.unresolved)} sem arquivo."
+        f"{len(discovery.charts)} cartas com ZIP; "
+        f"{len(discovery.unresolved)} sem arquivo; "
+        f"{discovery.head_requests} HEADs de variantes."
     )
     download_dir = args.download_dir or (root / "run" / "downloads")
-    prepared, failures = _download_changed(catalog.transport, discovery.files, manifest, download_dir)
+    prepared, failures, retired = _select_editions(
+        catalog.transport, discovery.charts, manifest, download_dir
+    )
     attempts = len(failures) + len(prepared)
     if attempts >= 5 and len(failures) / attempts > 0.5:
         raise SourceLayoutError(
@@ -115,8 +125,12 @@ def run_update(args) -> int:
     for failure in failures:
         unresolved.append(Unresolved(chart_id="?", title=failure, reason="falha ao ler o ZIP"))
     if args.mode == "auto":
-        return _apply_auto(args, root, manifest, rejected, content, header_only, unresolved, now)
-    return _apply_review(args, root, manifest, rejected, content, header_only, unresolved, now)
+        return _apply_auto(
+            args, root, manifest, rejected, content, header_only, unresolved, now, retired
+        )
+    return _apply_review(
+        args, root, manifest, rejected, content, header_only, unresolved, now, retired
+    )
 
 
 def publish_merged(args) -> int:
@@ -165,6 +179,10 @@ def publish_merged(args) -> int:
         args.repository,
         datetime.now(timezone.utc),
     )
+    for retired_id in document.get("retire_chart_ids") or []:
+        removed = manifest["charts"].pop(retired_id, None)
+        if removed:
+            print(f"Remove a entrada duplicada da carta {retired_id}.")
     save_json(root / "data" / "manifest.json", manifest)
     proposal_path = root / PROPOSALS_DIR / f"{chart_id}.json"
     if proposal_path.exists():
@@ -179,6 +197,9 @@ def publish_merged(args) -> int:
     )
     if committed:
         push_head(runner, root, "main")
+    removed = GitHub(runner, root, args.repository).cleanup_orphans(manifest["charts"])
+    if removed:
+        print(f"Assets órfãos removidos: {', '.join(removed)}")
     print(f"Carta {chart_id} publicada.")
     return 0
 
@@ -209,7 +230,7 @@ def reject_closed(args) -> int:
     return 0
 
 
-def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved, now) -> int:
+def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved, now, retired: list[str]) -> int:
     accepted, skipped = select_for_publish(content, rejected)
     for chart_id in skipped:
         print(f"Mantida rejeição da carta {chart_id}.")
@@ -222,6 +243,9 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
     runner = SubprocessRunner()
     _ensure_identity(runner, root)
     _apply_header_updates(manifest, header_only)
+    for chart_id in retired:
+        if manifest["charts"].pop(chart_id, None):
+            print(f"A carta {chart_id} usava um ZIP que agora é edição de outra carta.")
     published: list[PreparedChart] = []
     failures: list[str] = []
 
@@ -237,12 +261,16 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
             now,
         )
 
+    github = None
     try:
-        if accepted:
+        if accepted or retired:
             github = GitHub(runner, root, args.repository)
+        if accepted:
             failures = upload_new_assets(accepted, manifest, github, published, persist)
     finally:
         persist()
+    if github is not None and (published or retired):
+        github.cleanup_orphans(manifest["charts"])
     if failures:
         print(f"{len(published)} carta(s) ficaram no manifesto. Rode de novo para continuar.", flush=True)
         for line in failures:
@@ -251,7 +279,7 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
     return 0
 
 
-def _apply_review(args, root, manifest, rejected, content, header_only, unresolved, now) -> int:
+def _apply_review(args, root, manifest, rejected, content, header_only, unresolved, now, retired: list[str]) -> int:
     runner = SubprocessRunner()
     github = GitHub(runner, root, args.repository)
     open_prs = [] if args.dry_run else github.list_open_prs()
@@ -289,46 +317,92 @@ def _apply_review(args, root, manifest, rejected, content, header_only, unresolv
         print(f"Fechando PR #{pr.number} da carta {pr.chart_id} (edição substituída).")
         github.supersede(pr.number, pr.chart_id)
     for chart in decision.opens:
-        _open_one_pr(args, root, runner, github, manifest, chart)
+        absorbed = _retired_for(chart, retired, manifest)
+        _open_one_pr(args, root, runner, github, manifest, chart, absorbed)
     runner.run(["git", "checkout", "main"], cwd=root)
     return 0
 
 
-def _open_one_pr(args, root: Path, runner: SubprocessRunner, github: GitHub, manifest: dict, chart: PreparedChart) -> None:
+def _open_one_pr(args, root: Path, runner: SubprocessRunner, github: GitHub, manifest: dict, chart: PreparedChart, retire: list[str] | None = None) -> None:
     entry = manifest_entry(chart)
     previous = manifest["charts"].get(chart.remote.chart_id)
     branch = f"review/{chart.remote.chart_id}-{chart.sha256[:12]}"
     print(f"Abrindo PR da carta {entry['chart_id']} na branch {branch}…")
     runner.run(["git", "checkout", "-B", branch, "main"], cwd=root)
     proposal_path = root / PROPOSALS_DIR / f"{chart.remote.chart_id}.json"
-    save_json(proposal_path, proposal_document(entry, previous))
+    save_json(proposal_path, proposal_document(entry, previous, retire or None))
     body_path = root / "run" / f"{chart.remote.chart_id}.md"
     body_path.parent.mkdir(parents=True, exist_ok=True)
-    body_path.write_text(pull_request_body(entry, previous, args.repository), encoding="utf-8")
+    body_path.write_text(
+        pull_request_body(entry, previous, args.repository, retire or None),
+        encoding="utf-8",
+    )
     commit_paths(runner, root, [proposal_path], pull_request_title(entry))
     push_head(runner, root, branch)
     github.open_pull_request(branch=branch, title=pull_request_title(entry), body_file=body_path)
 
 
-def _download_changed(transport, files: list[RemoteFile], manifest: dict, download_dir: Path):
+def _retired_for(chart: PreparedChart, retired: list[str], manifest: dict) -> list[str]:
+    url = chart.remote.source_url
+    return [
+        chart_id
+        for chart_id in retired
+        if manifest.get("charts", {}).get(chart_id, {}).get("source_url") == url
+    ]
+
+
+def _select_editions(transport, charts, manifest: dict, download_dir: Path):
+    """Download variants that differ from the manifest and keep the newest edition."""
     download_dir.mkdir(parents=True, exist_ok=True)
-    charts = manifest.get("charts", {})
+    stored = manifest.get("charts", {})
     prepared: list[PreparedChart] = []
     failures: list[str] = []
-    for remote in files:
-        previous = charts.get(remote.chart_id)
-        if headers_match(previous, remote.content_length, remote.last_modified, remote.etag):
+    chosen_urls: dict[str, str] = {}
+    considered: dict[str, str] = {}
+    for group in charts:
+        chart_id = group.record.chart_id
+        previous = stored.get(chart_id)
+        for remote in group.variants:
+            considered[remote.source_url] = chart_id
+        options = []
+        downloaded: dict[str, PreparedChart] = {}
+        for remote in group.variants:
+            if manifest_has_same_bytes(previous, remote.zip_name, remote.content_length, remote.last_modified):
+                options.append((remote, view_from_manifest(previous)))
+                continue
+            destination = download_dir / f"{chart_id}-{remote.zip_name}"
+            try:
+                result = transport.get(remote.source_url)
+                if result.status != 200:
+                    raise ChartPackageError(
+                        f"{chart_id}: HTTP {result.status} ao baixar {remote.source_url}"
+                    )
+                destination.write_bytes(result.body)
+                packaged = package_chart(remote, destination)
+            except (ChartPackageError, OSError) as exc:
+                failures.append(str(exc))
+                continue
+            downloaded[remote.source_url] = packaged
+            options.append((remote, view_from_bsb(packaged.bsb, packaged.zip_datetime)))
+        if not options:
             continue
-        destination = download_dir / remote.zip_name
-        try:
-            result = transport.get(remote.source_url)
-            if result.status != 200:
-                raise ChartPackageError(f"{remote.chart_id}: HTTP {result.status} ao baixar {remote.source_url}")
-            destination.write_bytes(result.body)
-            prepared.append(package_chart(remote, destination))
-        except (ChartPackageError, OSError) as exc:
-            failures.append(str(exc))
-    return prepared, failures
+        best_remote, best_view = choose_newest(options)
+        if previous is not None and not is_newer(best_view, view_from_manifest(previous)):
+            print(
+                f"Carta {chart_id}: a edição publicada não é mais antiga que "
+                f"{best_remote.zip_name}. Sem rebaixamento.",
+                flush=True,
+            )
+            if previous.get("source_url"):
+                chosen_urls.setdefault(previous["source_url"], chart_id)
+            continue
+        chosen_urls[best_remote.source_url] = chart_id
+        packaged = downloaded.get(best_remote.source_url)
+        if packaged is None:
+            continue
+        prepared.append(packaged)
+    retired = retire_absorbed(stored, chosen_urls, considered)
+    return prepared, failures, retired
 
 
 def _split_content_changes(prepared: list[PreparedChart], manifest: dict):
