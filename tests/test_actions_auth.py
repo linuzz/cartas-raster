@@ -73,3 +73,12 @@ def test_local_run_does_not_require_a_token(monkeypatch):
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     monkeypatch.delenv("GH_TOKEN", raising=False)
     require_actions_token()
+
+
+def test_real_gh_command_is_refused_without_the_token(monkeypatch, tmp_path: Path):
+    from cartas_raster.github_io import SubprocessRunner
+
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    with pytest.raises(CommandError, match="GH_TOKEN"):
+        SubprocessRunner().run(["gh", "release", "view", "cartas"], cwd=tmp_path)

@@ -50,6 +50,8 @@ class CommandResult:
 @dataclass
 class SubprocessRunner:
     def run(self, args: list[str], *, cwd: Path, check: bool = True) -> CommandResult:
+        if args and args[0] == "gh":
+            require_actions_token()
         completed = subprocess.run(
             args,
             cwd=cwd,
@@ -67,7 +69,6 @@ class SubprocessRunner:
 
 class GitHub:
     def __init__(self, runner: SubprocessRunner, root: Path, repository: str):
-        require_actions_token()
         self.runner = runner
         self.root = root
         self.repository = repository
