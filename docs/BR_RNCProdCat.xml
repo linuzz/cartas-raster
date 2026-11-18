@@ -5622,15 +5622,15 @@
     <title>Porto de Guamaré (1:15000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2010</ntm_edition>
+    <ntm_edition>2024</ntm_edition>
     <source_date>12/27/2002</source_date>
-    <ntm_date>09/14/2018</ntm_date>
-    <ntm_edition_last_correction>2010-18</ntm_edition_last_correction>
+    <ntm_date>11/21/2024</ntm_date>
+    <ntm_edition_last_correction>2024-286</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_704.zip</zipfile_location>
-    <zipfile_datetime>20241202_133845</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:38:45Z</zipfile_datetime_iso8601>
-    <zipfile_size>298777</zipfile_size>
-    <target_filename>704.zip</target_filename>
+    <zipfile_datetime>20250414_134652</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-14T13:46:52Z</zipfile_datetime_iso8601>
+    <zipfile_size>559745</zipfile_size>
+    <target_filename>704_0.zip</target_filename>
   </chart>
   <chart>
     <number>710</number>
@@ -5652,30 +5652,30 @@
     <title>Terminal Portuário do Pecém (1:15000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2020</ntm_edition>
+    <ntm_edition>2025</ntm_edition>
     <source_date>10/09/2017</source_date>
-    <ntm_date>02/12/2021</ntm_date>
-    <ntm_edition_last_correction>2020-122</ntm_edition_last_correction>
+    <ntm_date>07/15/2026</ntm_date>
+    <ntm_edition_last_correction>2025-192</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_711.zip</zipfile_location>
-    <zipfile_datetime>20241202_133857</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:38:57Z</zipfile_datetime_iso8601>
-    <zipfile_size>316400</zipfile_size>
-    <target_filename>711.zip</target_filename>
+    <zipfile_datetime>20260715_142504</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-07-15T14:25:04Z</zipfile_datetime_iso8601>
+    <zipfile_size>334638</zipfile_size>
+    <target_filename>711_1.zip</target_filename>
   </chart>
   <chart>
     <number>720</number>
     <title>De Areia Branca a Guamaré (1:100000)</title>
     <source_edition>3</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2024</ntm_edition>
+    <ntm_edition>2025</ntm_edition>
     <source_date>03/28/2003</source_date>
-    <ntm_date>10/25/2024</ntm_date>
-    <ntm_edition_last_correction>2024-257</ntm_edition_last_correction>
+    <ntm_date>03/18/2025</ntm_date>
+    <ntm_edition_last_correction>2025-27</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_720.zip</zipfile_location>
-    <zipfile_datetime>20241202_134215</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:15Z</zipfile_datetime_iso8601>
-    <zipfile_size>1314139</zipfile_size>
-    <target_filename>720.zip</target_filename>
+    <zipfile_datetime>20250320_121404</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-03-20T12:14:04Z</zipfile_datetime_iso8601>
+    <zipfile_size>1313446</zipfile_size>
+    <target_filename>720_0.zip</target_filename>
   </chart>
   <chart>
     <number>806</number>
@@ -5695,17 +5695,14 @@
   <chart>
     <number>810</number>
     <title>Proximidades do Porto de Natal (1:75000)</title>
-    <source_edition>2</source_edition>
+    <source_edition>3</source_edition>
     <raster_edition>1</raster_edition>
-    <ntm_edition>2025</ntm_edition>
-    <source_date>07/30/2009</source_date>
-    <ntm_date>04/09/2025</ntm_date>
-    <ntm_edition_last_correction>2025-44</ntm_edition_last_correction>
+    <source_date>06/30/2026</source_date>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_810.zip</zipfile_location>
-    <zipfile_datetime>20250411_140438</zipfile_datetime>
-    <zipfile_datetime_iso8601>2025-04-11T14:04:38Z</zipfile_datetime_iso8601>
-    <zipfile_size>1170587</zipfile_size>
-    <target_filename>810.zip</target_filename>
+    <zipfile_datetime>20260709_121851</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-07-09T12:18:51Z</zipfile_datetime_iso8601>
+    <zipfile_size>510547</zipfile_size>
+    <target_filename>810_1.zip</target_filename>
   </chart>
   <chart>
     <number>811</number>
@@ -5727,12 +5724,15 @@
     <title>Porto de Cabedelo (1:15000)</title>
     <source_edition>1</source_edition>
     <raster_edition>1</raster_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>12/01/2025</source_date>
+    <ntm_date>11/10/2026</ntm_date>
+    <ntm_edition_last_correction>2026-158</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_821.zip</zipfile_location>
-    <zipfile_datetime>20251128_135057</zipfile_datetime>
-    <zipfile_datetime_iso8601>2025-11-28T13:50:57Z</zipfile_datetime_iso8601>
-    <zipfile_size>656983</zipfile_size>
-    <target_filename>821.zip</target_filename>
+    <zipfile_datetime>20261117_122355</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-11-17T12:23:55Z</zipfile_datetime_iso8601>
+    <zipfile_size>671182</zipfile_size>
+    <target_filename>821_2.zip</target_filename>
   </chart>
   <chart>
     <number>902</number>
@@ -5752,14 +5752,17 @@
   <chart>
     <number>912</number>
     <title>Porto de Suape (1:15000)</title>
-    <source_edition>1</source_edition>
+    <source_edition>2</source_edition>
     <raster_edition>1</raster_edition>
-    <source_date>09/30/2024</source_date>
+    <ntm_edition>2025</ntm_edition>
+    <source_date>09/29/2025</source_date>
+    <ntm_date>11/24/2025</ntm_date>
+    <ntm_edition_last_correction>2025-178</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_912.zip</zipfile_location>
-    <zipfile_datetime>20241202_134219</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:19Z</zipfile_datetime_iso8601>
-    <zipfile_size>491734</zipfile_size>
-    <target_filename>912.zip</target_filename>
+    <zipfile_datetime>20251124_192018</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-11-24T19:20:18Z</zipfile_datetime_iso8601>
+    <zipfile_size>486584</zipfile_size>
+    <target_filename>912_3.zip</target_filename>
   </chart>
   <chart>
     <number>920</number>
@@ -5779,14 +5782,17 @@
   <chart>
     <number>921</number>
     <title>Porto de Maceió (1:20000)</title>
-    <source_edition>1</source_edition>
+    <source_edition>2</source_edition>
     <raster_edition>1</raster_edition>
+    <ntm_edition>2026</ntm_edition>
     <source_date>09/27/2024</source_date>
+    <ntm_date>11/11/2026</ntm_date>
+    <ntm_edition_last_correction>2026-159</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_921.zip</zipfile_location>
-    <zipfile_datetime>20241202_134212</zipfile_datetime>
-    <zipfile_datetime_iso8601>2024-12-02T13:42:12Z</zipfile_datetime_iso8601>
-    <zipfile_size>476134</zipfile_size>
-    <target_filename>921.zip</target_filename>
+    <zipfile_datetime>20261117_122556</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-11-17T12:25:56Z</zipfile_datetime_iso8601>
+    <zipfile_size>402879</zipfile_size>
+    <target_filename>921_1.zip</target_filename>
   </chart>
   <chart>
     <number>930</number>
@@ -5795,12 +5801,12 @@
     <raster_edition>1</raster_edition>
     <ntm_edition>2025</ntm_edition>
     <source_date>05/20/2004</source_date>
-    <ntm_date>04/10/2025</ntm_date>
-    <ntm_edition_last_correction>2025-45</ntm_edition_last_correction>
+    <ntm_date>08/21/2025</ntm_date>
+    <ntm_edition_last_correction>2025-132</ntm_edition_last_correction>
     <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_930.zip</zipfile_location>
-    <zipfile_datetime>20250411_144404</zipfile_datetime>
-    <zipfile_datetime_iso8601>2025-04-11T14:44:04Z</zipfile_datetime_iso8601>
-    <zipfile_size>1502435</zipfile_size>
-    <target_filename>930.zip</target_filename>
+    <zipfile_datetime>20250826_120424</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-08-26T12:04:24Z</zipfile_datetime_iso8601>
+    <zipfile_size>1225115</zipfile_size>
+    <target_filename>930_1.zip</target_filename>
   </chart>
 </RncProductCatalog>
