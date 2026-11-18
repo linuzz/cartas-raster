@@ -8,7 +8,6 @@ from cartas_raster.dhn import (
     chart_id_from_token,
     parse_search_payload,
     parse_title,
-    raster_filenames_from_html,
     records_from_metadata,
     scale_denominator,
     zip_candidates,
@@ -54,9 +53,9 @@ def test_title_and_token_patterns():
 def test_zip_candidates_do_not_steal_another_chart():
     assert zip_candidates("3332") == ["3332.zip", "3332_0.zip"]
     assert "1831.zip" not in zip_candidates("1831 PL")
-    assert zip_candidates("1831 PL")[0] == "1831PL.zip"
-    assert "1831_0.zip" in zip_candidates("1831 PL")
-    assert zip_candidates("4342A") == ["4342A.zip"]
+    assert "1831_0.zip" not in zip_candidates("1831 PL")
+    assert zip_candidates("1831 PL") == ["1831PL.zip", "1831PL_0.zip"]
+    assert zip_candidates("4342A") == ["4342A.zip", "4342A_0.zip"]
     assert "4150.zip" not in zip_candidates("4150 (HS-C6)")
     assert "4032.zip" not in zip_candidates("4032A")
 
@@ -91,18 +90,6 @@ def test_records_from_metadata_reads_the_download_link():
     assert records[0].chart_id == "3332"
     assert records[0].page_url.endswith("/puerto-vallemi")
     assert records[0].scale == 25000
-
-
-def test_html_page_yields_one_zip_and_ignores_cloudflare():
-    html = """
-    <div class="field field-name-field-carta-raster">
-      <a href="https://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/3332.zip">3332.zip</a>
-    </div>
-    """
-    assert raster_filenames_from_html(html) == ["3332.zip"]
-    listing = html + '<a href="https://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/3333.zip">'
-    assert len(raster_filenames_from_html(listing)) == 2
-    assert raster_filenames_from_html("<title>Just a moment...</title>") == []
 
 
 class FakeTransport:

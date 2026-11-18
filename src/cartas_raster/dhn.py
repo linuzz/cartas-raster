@@ -9,15 +9,10 @@ Two official surfaces, verified against the live site:
   list points at the CHM page and, sometimes, only at a regional listing.
 - The file itself is a ZIP of BSB/KAP named
   ``https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/<arquivo>.zip``.
-  Plain chart numbers use ``<número>.zip``. Plans (``PL``) often use
-  ``<número>_0.zip``. Letter suffixes use ``<número><letras>.zip``.
-  ``www.marinha.mil.br`` HTML pages are behind a Cloudflare challenge from
-  this environment and from typical CI addresses, so the file name is
-  derived from the chart token and checked with HEAD. ``data/source_overrides.json``
-  can force a file name without a code change.
-
-The HTML of an individual chart page is still parsed when it is reachable.
-A page that contains more than one raster file is a listing and is ignored.
+  A new edition is often uploaded as ``<n>_0.zip``, ``<n>_1.zip``, ... while
+  the previous ``<n>.zip`` stays online. Every generation is listed with HEAD;
+  the newest BSB edition is chosen later. HTML pages on ``www.marinha.mil.br``
+  are not fetched. ``data/source_overrides.json`` can add one extra file name.
 """
 
 from __future__ import annotations
@@ -25,11 +20,13 @@ from __future__ import annotations
 import json
 import os
 import re
+import urllib.error
 from dataclasses import dataclass
 from typing import Protocol
 
 from cartas_raster.errors import SourceLayoutError
 from cartas_raster.models import IndexRecord, RemoteFile, Unresolved
+from cartas_raster.paper_catalogue import catalogue_links, newest_catalogue_url
 
 SEARCH_URL = (
     "https://idem.marinha.mil.br/geonetwork/srv/por/q"
@@ -56,10 +53,23 @@ class Transport(Protocol):
 
 
 @dataclass
+class ChartVariants:
+    record: IndexRecord
+    variants: list[RemoteFile]
+
+
+@dataclass
 class Discovery:
-    files: list[RemoteFile]
+    charts: list[ChartVariants]
     unresolved: list[Unresolved]
     index_count: int
+    head_requests: int = 0
+    catalogue_pdf_url: str | None = None
+
+    @property
+    def files(self) -> list[RemoteFile]:
+        """First existing ZIP of each chart. Not the chosen edition."""
+        return [chart.variants[0] for chart in self.charts if chart.variants]
 
 
 def parse_title(title: str) -> tuple[str | None, str, str]:
@@ -97,42 +107,54 @@ def chart_id_from_token(token: str) -> str:
     return f"{match.group(1)}{letters}{plan}"
 
 
+MAX_VARIANT_INDEX = 30
+
+
+def variant_stem(token: str) -> str:
+    """File stem for this chart only. A plan does not reuse the parent number."""
+    return chart_id_from_token(token)
+
+
 def zip_candidates(token: str) -> list[str]:
-    """File names to try, most specific first. Never guesses another chart's file."""
-    raw = token.strip()
-    parenthetical = re.fullmatch(r"(\d+)\s*\(([^)]+)\)", raw, flags=re.I)
-    if parenthetical:
-        base = parenthetical.group(1)
-        extra = re.sub(r"\s+", "", parenthetical.group(2))
-        alnum = re.sub(r"[^A-Za-z0-9]", "", extra)
-        return _unique(
-            [
-                f"{base}{extra}.zip",
-                f"{base}_{extra}.zip",
-                f"{base}-{extra}.zip",
-                f"{base}{alnum}.zip",
-                f"{base}_{alnum}.zip",
-            ]
-        )
-    match = re.fullmatch(r"(\d+)([A-Za-z]+)?\s*(PL)?", raw, flags=re.I)
-    if not match:
-        compact = re.sub(r"[^A-Za-z0-9]+", "", raw)
-        return [f"{compact}.zip"] if compact else []
-    base = match.group(1)
-    letters = (match.group(2) or "").upper()
-    plan = bool(match.group(3))
-    if letters and plan:
-        names = [f"{base}{letters}PL.zip", f"{base}{letters}_0.zip", f"{base}_{letters}_0.zip"]
-    elif plan:
-        # Do not fall back to the parent chart's ZIP: the plan panel usually
-        # lives inside that file, and claiming it would publish the same bytes twice.
-        names = [f"{base}PL.zip", f"{base}_PL.zip", f"{base}_0.zip"]
-    elif letters:
-        names = [f"{base}{letters}.zip"]
-    else:
-        # Some sheets are published only as "<number>_0.zip".
-        names = [f"{base}.zip", f"{base}_0.zip"]
-    return _unique(names)
+    """The two names that are always checked: ``<stem>.zip`` and ``<stem>_0.zip``."""
+    stem = variant_stem(token)
+    return [f"{stem}.zip", f"{stem}_0.zip"]
+
+
+def probe_variant_files(stem: str, head):
+    """HEAD ``<stem>.zip`` and ``<stem>_0.zip``, then ``_1``, ``_2``, ... until one is missing.
+
+    ``head(name)`` returns a value when the file exists and a false value when it does not.
+    The missing suffix that stops the sequence is still requested. ``_1`` is not
+    requested when ``_0`` is already missing.
+    """
+    found = []
+    plain = head(f"{stem}.zip")
+    if plain:
+        found.append(plain)
+    suffix_zero = head(f"{stem}_0.zip")
+    if not suffix_zero:
+        return found
+    found.append(suffix_zero)
+    index = 1
+    while index <= MAX_VARIANT_INDEX:
+        item = head(f"{stem}_{index}.zip")
+        if not item:
+            break
+        found.append(item)
+        index += 1
+    return found
+
+
+def extra_suffix_names(stem: str, found_names: list[str], extra: int = 2) -> list[str]:
+    """Names past the first missing suffix. Used only when the paper catalogue is newer."""
+    highest = -1
+    for name in found_names:
+        match = re.fullmatch(re.escape(stem) + r"_(\d+)\.zip", name)
+        if match:
+            highest = max(highest, int(match.group(1)))
+    start = 1 if highest < 0 else highest + 2
+    return [f"{stem}_{start + offset}.zip" for offset in range(extra)]
 
 
 def scale_denominator(scale_label: str | None) -> int | None:
@@ -252,16 +274,20 @@ class DhnCatalog:
         records, failures = records_from_metadata(raw_items)
         assert_index_sane(count, records, failures)
         records, conflicts = _drop_duplicate_ids(records)
-        files, unresolved = self._resolve(records)
+        charts, unresolved, head_requests = self._resolve(records)
         unresolved.extend(conflicts)
         for title in failures:
             unresolved.append(
                 Unresolved(chart_id="?", title=title, reason="título fora do padrão conhecido")
             )
-        files, shared = _drop_shared_urls(files)
-        unresolved.extend(shared)
-        assert_resolution_sane(len(files), len(records) + len(conflicts))
-        return Discovery(files=files, unresolved=unresolved, index_count=count)
+        assert_resolution_sane(len(charts), len(records) + len(conflicts))
+        return Discovery(
+            charts=charts,
+            unresolved=unresolved,
+            index_count=count,
+            head_requests=head_requests,
+            catalogue_pdf_url=newest_catalogue_url(catalogue_links(raw_items)),
+        )
 
     def _collect_index(self) -> tuple[list[dict], int]:
         collected: list[dict] = []
@@ -298,17 +324,31 @@ class DhnCatalog:
                 raise SourceLayoutError("A paginação do GeoNetwork não terminou.")
         return collected, int(count or 0)
 
-    def _resolve(self, records: list[IndexRecord]) -> tuple[list[RemoteFile], list[Unresolved]]:
-        files: list[RemoteFile] = []
+    def _resolve(self, records: list[IndexRecord]) -> tuple[list[ChartVariants], list[Unresolved], int]:
+        charts: list[ChartVariants] = []
         unresolved: list[Unresolved] = []
+        head_requests = 0
         for index, record in enumerate(records, start=1):
-            found = self._resolve_one(record)
+            try:
+                found, used = self._probe_record(record)
+            except (TimeoutError, OSError, urllib.error.URLError) as exc:
+                unresolved.append(
+                    Unresolved(
+                        chart_id=record.chart_id,
+                        title=record.title,
+                        reason=f"falha de rede ao consultar as variantes: {exc}",
+                        page_url=record.page_url,
+                    )
+                )
+                continue
+            head_requests += used
             if index % 50 == 0 or index == len(records):
                 print(
-                    f"Conferidos {index} de {len(records)} números; {len(files)} ZIPs até aqui.",
+                    f"Conferidos {index} de {len(records)} números; "
+                    f"{len(charts)} com ZIP; {head_requests} HEADs.",
                     flush=True,
                 )
-            if found is None:
+            if not found:
                 unresolved.append(
                     Unresolved(
                         chart_id=record.chart_id,
@@ -318,39 +358,39 @@ class DhnCatalog:
                     )
                 )
             else:
-                files.append(found)
-        return files, unresolved
+                charts.append(ChartVariants(record=record, variants=found))
+        return charts, unresolved, head_requests
 
-    def _resolve_one(self, record: IndexRecord) -> RemoteFile | None:
-        names: list[str] = []
+    def _probe_record(self, record: IndexRecord) -> tuple[list[RemoteFile], int]:
+        stem = variant_stem(record.token)
+        headed = 0
+        cache: dict[str, RemoteFile | None] = {}
+
+        def head(name: str):
+            nonlocal headed
+            if name not in cache:
+                headed += 1
+                cache[name] = self._head_zip(record, name)
+            return cache[name]
+
+        found: list[RemoteFile] = []
         override = self.overrides.get(record.chart_id)
         if override:
-            names.append(override if override.endswith(".zip") else f"{override}.zip")
-        names.extend(zip_candidates(record.token))
-        for name in _unique(names):
-            remote = self._head_zip(record, name)
-            if remote is not None:
-                return remote
-        # The CHM HTML page is behind Cloudflare from datacenter IPs. Try it
-        # only after the predictable file names miss, and give up quickly.
-        page_name = self._name_from_page(record.page_url)
-        if page_name:
-            return self._head_zip(record, page_name)
-        return None
-
-    def _name_from_page(self, page_url: str | None) -> str | None:
-        if not page_url or not _is_single_chart_page(page_url):
-            return None
-        result = self.transport.get(page_url, timeout=8, retries=1)
-        if result.status != 200:
-            return None
-        html = result.body.decode("utf-8", errors="replace")
-        if _is_challenge(html):
-            return None
-        names = raster_filenames_from_html(html)
-        if len(names) != 1:
-            return None
-        return names[0]
+            override_name = override if str(override).endswith(".zip") else f"{override}.zip"
+            hit = head(override_name)
+            if hit is not None:
+                found.append(hit)
+        found.extend(item for item in probe_variant_files(stem, head) if item is not None)
+        # probe_variant_files already appended only truthy hits, but override
+        # might duplicate the stem name. Keep the first of each URL.
+        unique: list[RemoteFile] = []
+        urls: set[str] = set()
+        for item in found:
+            if item.source_url in urls:
+                continue
+            urls.add(item.source_url)
+            unique.append(item)
+        return unique, headed
 
     def _head_zip(self, record: IndexRecord, zip_name: str) -> RemoteFile | None:
         url = RASTER_BASE + zip_name
@@ -393,27 +433,6 @@ class DhnCatalog:
         if not isinstance(payload, dict):
             raise SourceLayoutError("O índice da DHN não devolveu um objeto JSON.")
         return payload
-
-
-def raster_filenames_from_html(html: str) -> list[str]:
-    """ZIP file names linked from a CHM chart page. More than one means a listing."""
-    names = re.findall(
-        r"files/raster/([A-Za-z0-9][A-Za-z0-9_.-]{0,80}\.zip)",
-        html,
-        flags=re.IGNORECASE,
-    )
-    return _unique(names)
-
-
-def _is_single_chart_page(url: str) -> bool:
-    path = url.rstrip("/").rsplit("/", 1)[-1]
-    # Regional listings are ``cartas-raster`` or ``cartas-raster-59``.
-    return not re.fullmatch(r"cartas-raster(?:-\d+)?", path)
-
-
-def _is_challenge(html: str) -> bool:
-    lowered = html.lower()
-    return "just a moment" in lowered or "cf-browser-verification" in lowered
 
 
 def _looks_like_raster(item: dict) -> bool:

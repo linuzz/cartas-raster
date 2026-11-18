@@ -225,6 +225,31 @@ class GitHub:
                 sizes[str(name)] = int(asset.get("size") or 0)
         return sizes
 
+    def delete_asset(self, name: str) -> None:
+        self.runner.run(
+            [
+                "gh",
+                "release",
+                "delete-asset",
+                RELEASE_TAG,
+                name,
+                "--repo",
+                self.repository,
+                "--yes",
+            ],
+            cwd=self.root,
+        )
+
+    def cleanup_orphans(self, charts: dict) -> list[str]:
+        """Delete release assets the manifest does not reference."""
+        from cartas_raster.edition import orphan_asset_names
+
+        names = orphan_asset_names(charts, list(self.release_asset_sizes()))
+        for name in names:
+            print(f"Removendo asset órfão {name}.", flush=True)
+            self.delete_asset(name)
+        return names
+
     def upload_asset(self, path: Path) -> None:
         self.ensure_release()
         self.runner.run(
