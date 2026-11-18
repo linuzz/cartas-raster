@@ -1,4 +1,623 @@
 {
-  "charts": [],
+  "charts": [
+    {
+      "chart_id": "1108PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-125",
+      "reason": "o painel usa o mesmo ZIP da carta 1108",
+      "title": "Carta Nautica Raster 1:8.000 – Porto de São Roque – Carta 1108 PL"
+    },
+    {
+      "chart_id": "11PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-118",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:1.000 – Arquipélago de São Pedro e São Paulo – Carta 11 PL"
+    },
+    {
+      "chart_id": "1531",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav/cartas-raster",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:6.500 – Ilha do Boqueirão e Adjacências (Baía de Guanabara) – Carta 1531"
+    },
+    {
+      "chart_id": "1635PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-363",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Enseada de Ubatuba – Carta 1635 PL"
+    },
+    {
+      "chart_id": "1641",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav/cartas-raster",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:39.914 – Da Enseada do Mar Virado ao Porto de São Sebastião – Carta 1641"
+    },
+    {
+      "chart_id": "1642",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav/cartas-raster",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:39.861 – De São Sebastião à Ilha dos Gatos – Carta 1642"
+    },
+    {
+      "chart_id": "1831PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/porto-de-sao-francisco-do-sul",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:12.000 – Porto de São Francisco do Sul – Carta 1831 PL"
+    },
+    {
+      "chart_id": "1841A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-105",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Porto de Itajaí – Carta 1841A"
+    },
+    {
+      "chart_id": "1841B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-105",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Porto de Itajaí – Carta 1841B"
+    },
+    {
+      "chart_id": "204BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-83",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Trapiche de Macapá – Carta 204B PL"
+    },
+    {
+      "chart_id": "2104A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/canal-sao-goncalo-da-barra-pelotas",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Canal São Gonçalo Da Barra a Pelotas – Carta 2104A"
+    },
+    {
+      "chart_id": "2104B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/canal-sao-goncalo-da-barra-pelotas",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Canal São Gonçalo Da Barra a Pelotas – Carta 2104B"
+    },
+    {
+      "chart_id": "2104C",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/canal-sao-goncalo-da-barra-pelotas",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Canal São Gonçalo Da Barra a Pelotas – Carta 2104C"
+    },
+    {
+      "chart_id": "2113PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-89",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Canal de Acesso ao Teminal Santa Clara – Carta 2113 PL"
+    },
+    {
+      "chart_id": "2140APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Enseada de Tapes - Carta 2140A PL"
+    },
+    {
+      "chart_id": "2140BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Fundeadouro de Arambaré – Carta 2140B PL"
+    },
+    {
+      "chart_id": "2140CPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Fundeadouro de Cristóvão Pereira – Carta 2140C PL"
+    },
+    {
+      "chart_id": "2140DPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Fundeadoro de Bojuru – Carta 2140D PL"
+    },
+    {
+      "chart_id": "2140EPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-347",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Fundeadouro de S. Lourenço do Sul – Carta 2140E PL"
+    },
+    {
+      "chart_id": "21APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/ilha-da-trindade",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Ilhas Martin Vaz – Carta 21A PL"
+    },
+    {
+      "chart_id": "21BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/ilha-da-trindade",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:200.000 – Ilha da Trindade e Martins Vaz – Carta 21B PL"
+    },
+    {
+      "chart_id": "25121APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-6",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Ilha Rei George - Enseada Martel – Carta 25121A PL"
+    },
+    {
+      "chart_id": "25121BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-6",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Ilha Rei George - Estação Arctowski – Carta 25121B PL"
+    },
+    {
+      "chart_id": "25121CPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-6",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:15.000 – Ilha Rei George Enseada Mackellar – Carta 25121C PL"
+    },
+    {
+      "chart_id": "25122",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-78",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:40.000 – Baía de Maxwell (Ilha Rei George) – Carta 25122"
+    },
+    {
+      "chart_id": "25122PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-78",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Enseada Ardley e Baía Edgell – Carta 25122 PL"
+    },
+    {
+      "chart_id": "303PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-43",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Soure – Carta 303 PL"
+    },
+    {
+      "chart_id": "305APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-391",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Abaetetuba – Carta 305A PL"
+    },
+    {
+      "chart_id": "305BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-391",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Passagem do Mandií – Carta 305B PL"
+    },
+    {
+      "chart_id": "3330",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-334",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Do Puerto Risso a Isla Dalmacia – Carta 3330"
+    },
+    {
+      "chart_id": "3381",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-253",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Da Ilha Verde à Ilha Paraguai Mirim – Carta 3381"
+    },
+    {
+      "chart_id": "3382",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-245",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Do Rio Paraguai Mirim à Ilha Baguari – Carta 3382"
+    },
+    {
+      "chart_id": "3385",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-242",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Da Ilha do Coqueiro à Ilha Santa Fé – Carta 3385"
+    },
+    {
+      "chart_id": "3386",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/da-ilha-santa-fe-ao-corrego-do-mata-cachorro",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Da Ilha Santa Fé ao Córrego do Mata Cachorro – Carta 3386"
+    },
+    {
+      "chart_id": "3442",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-200",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Do Posto Agrícola a Cáceres – Carta 3442"
+    },
+    {
+      "chart_id": "4016PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/de-almeirim-ilha-do-paranaquara",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Almeirim – Carta 4016 PL"
+    },
+    {
+      "chart_id": "4024PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-114",
+      "reason": "o painel usa o mesmo ZIP da carta 4024",
+      "title": "Carta Nautica Raster 1:25.000 – Paraná de Juruti – Carta 4024 PL"
+    },
+    {
+      "chart_id": "4026A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-147",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Paraná do Mocambo – Carta 4026A"
+    },
+    {
+      "chart_id": "4026PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-153",
+      "reason": "o painel usa o mesmo ZIP da carta 4026",
+      "title": "Carta Nautica Raster 1:10.000 – Parintins – Carta 4026 PL"
+    },
+    {
+      "chart_id": "4029APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/parana-do-serpa",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Terminal de Itacoatiara – Carta 4029A PL"
+    },
+    {
+      "chart_id": "4029BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-209",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Terminal Graneleiro – Carta 4029B PL"
+    },
+    {
+      "chart_id": "4032AAPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-31",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:7.500 – Porto de Manaus – Carta 4032AA PL"
+    },
+    {
+      "chart_id": "4032ABPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-31",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:7.500 – Porto Chibatão – Carta 4032AB PL"
+    },
+    {
+      "chart_id": "4032ACPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-31",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:7.500 – Terminal da Reman – Carta 4032AC PL"
+    },
+    {
+      "chart_id": "4056",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-469",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000– Da Ilha Trocari a Coari – Carta 4056"
+    },
+    {
+      "chart_id": "4101APL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-472",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Passagem da Ilha Salvador – Carta 4101A PL"
+    },
+    {
+      "chart_id": "4101B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-129",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Da Ilha Mangabal à Ilha do Comandai – Carta 4101B"
+    },
+    {
+      "chart_id": "4102A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-130",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – De Gurupá a Almeirim – Carta 4102A"
+    },
+    {
+      "chart_id": "4102AAPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-130",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Almeirim – Carta 4102AA PL"
+    },
+    {
+      "chart_id": "4102ABPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-130",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:10.000 – Gurupá – Carta 4102AB PL"
+    },
+    {
+      "chart_id": "4150-HS-B1",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B1)"
+    },
+    {
+      "chart_id": "4150-HS-B2",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe-0",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B2)"
+    },
+    {
+      "chart_id": "4150-HS-B3",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe-1",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B3)"
+    },
+    {
+      "chart_id": "4150-HS-B4",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe-2",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B4)"
+    },
+    {
+      "chart_id": "4150-HS-B5",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe-3",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B5)"
+    },
+    {
+      "chart_id": "4150-HS-B6",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/coari-tefe-4",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-B6)"
+    },
+    {
+      "chart_id": "4150-HS-C1",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C1)"
+    },
+    {
+      "chart_id": "4150-HS-C10",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-8",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C10)"
+    },
+    {
+      "chart_id": "4150-HS-C11",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-9",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C11)"
+    },
+    {
+      "chart_id": "4150-HS-C12",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-10",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C12)"
+    },
+    {
+      "chart_id": "4150-HS-C13",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-11",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C13)"
+    },
+    {
+      "chart_id": "4150-HS-C14",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-12",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C14)"
+    },
+    {
+      "chart_id": "4150-HS-C15",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav/cartas-raster",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C15)"
+    },
+    {
+      "chart_id": "4150-HS-C2",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-0",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C2)"
+    },
+    {
+      "chart_id": "4150-HS-C3",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-1",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C3)"
+    },
+    {
+      "chart_id": "4150-HS-C4",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-2",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C4)"
+    },
+    {
+      "chart_id": "4150-HS-C5",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-3",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C5)"
+    },
+    {
+      "chart_id": "4150-HS-C6",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-3",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C6)"
+    },
+    {
+      "chart_id": "4150-HS-C7",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-5",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C7)"
+    },
+    {
+      "chart_id": "4150-HS-C8",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-6",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C8)"
+    },
+    {
+      "chart_id": "4150-HS-C9",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/tefe-santo-antonio-de-ica-7",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-C9)"
+    },
+    {
+      "chart_id": "4150-HS-D1",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D1)"
+    },
+    {
+      "chart_id": "4150-HS-D10",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-8",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D10)"
+    },
+    {
+      "chart_id": "4150-HS-D11",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-9",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D11)"
+    },
+    {
+      "chart_id": "4150-HS-D12",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-10",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D12)"
+    },
+    {
+      "chart_id": "4150-HS-D2",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-0",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D2)"
+    },
+    {
+      "chart_id": "4150-HS-D3",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-1",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D3)"
+    },
+    {
+      "chart_id": "4150-HS-D4",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-2",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D4)"
+    },
+    {
+      "chart_id": "4150-HS-D5",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-3",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D5)"
+    },
+    {
+      "chart_id": "4150-HS-D6",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-4",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D6)"
+    },
+    {
+      "chart_id": "4150-HS-D7",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-5",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D7)"
+    },
+    {
+      "chart_id": "4150-HS-D8",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-6",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D8)"
+    },
+    {
+      "chart_id": "4150-HS-D9",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/santo-antonio-de-ica-tabatinga-7",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Rio Solimões – Carta 4150 (HS-D9)"
+    },
+    {
+      "chart_id": "4342A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/furo-dos-macacos-da-ilha-pracaxi-ao-rio-dos-veados",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.006 – Furo dos Macacos - Da Ilha Pracaxi ao Rio dos Veados – Carta 4342A"
+    },
+    {
+      "chart_id": "4342B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/furo-dos-macacos-do-rio-dos-veados-ao-rio-jacare-grande",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.013 – Furo dos Macacos - Do Rio dos Veados ao Rio Jacaré Grande – Carta 4342B"
+    },
+    {
+      "chart_id": "4342BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/furo-dos-macacos-do-rio-dos-veados-ao-rio-jacare-grande",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25000 – Passagem da Ilha das Onças – Carta 4342B PL"
+    },
+    {
+      "chart_id": "4343A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/furo-do-tajapuru-e-da-companhia-da-ilha-pracaxi-ilha-mutunquara",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.008 – Furo do Tajapuru e da Companhia - Da Ilha Pracaxi à Ilha Mutunquara - Carta 4343A"
+    },
+    {
+      "chart_id": "4343B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/furos-do-tajapuru-da-companhia-do-limao-e-ituquara-da-ilha-mutunquara",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.013 – Furos Tajapuru, Da Companhia, Do Limão e Ituquara - Da Ilha Mutunquara ao Canal do Vieira – Carta 4343B"
+    },
+    {
+      "chart_id": "4361A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-198",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.059 – Da Ilha Urucuricaia à Ponta Itapinima – Carta 4361A"
+    },
+    {
+      "chart_id": "4361B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-70",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.000 – Da Pta. Itapinima a Belo Monte – Carta 4361B"
+    },
+    {
+      "chart_id": "4362PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-397",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Cametá – Carta 4362 PL"
+    },
+    {
+      "chart_id": "4363PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-344",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Mocajuba – Carta 4363 PL"
+    },
+    {
+      "chart_id": "4365PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-342",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Nazaré dos Patos – Carta 4365 PL"
+    },
+    {
+      "chart_id": "4366PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-341",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:25.000 – Tucuruí – Carta 4366 PL"
+    },
+    {
+      "chart_id": "4381B",
+      "page_url": "https://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/2026-03/CAT-15ED-2026-2030%20-FOL4-2026_rev3244.pdf",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:100.001 – De Surucuá a Aveiro – Carta 4381B"
+    },
+    {
+      "chart_id": "4381BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-194",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:50.000 – Pedras de São Tomé (Chapeu de Sol) – Carta 4381B PL"
+    },
+    {
+      "chart_id": "4382A",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-208",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:49.998 – De Aveiro às Ilhas do Prado – Carta 4382A"
+    },
+    {
+      "chart_id": "4382B",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-428",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:49.980 – Das Ilha do Prado a Itaituba – Carta 4382B"
+    },
+    {
+      "chart_id": "4382BPL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-428",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Itaituba – Carta 4382B PL"
+    },
+    {
+      "chart_id": "4418PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-22",
+      "reason": "o painel usa o mesmo ZIP da carta 4418",
+      "title": "Carta Nautica Raster 1:12.500 – Porto Trombetas – Carta 4418 PL"
+    },
+    {
+      "chart_id": "4749PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-32",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Passagem Abelha – Carta 4749 PL"
+    },
+    {
+      "chart_id": "51PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/atol-das-rocas",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Atol das Rocas – Carta 51 PL"
+    },
+    {
+      "chart_id": "920PL",
+      "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-380",
+      "reason": "nenhum ZIP encontrado para o número da carta",
+      "title": "Carta Nautica Raster 1:20.000 – Fundeadouro de São Miguel – Carta 920 PL"
+    }
+  ],
   "version": 1
 }
