@@ -9,8 +9,6 @@ Two official surfaces, verified against the live site:
   list points at the CHM page and, sometimes, only at a regional listing.
 - The file itself is a ZIP of BSB/KAP named
   ``https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/<arquivo>.zip``.
-  Plain chart numbers use ``<número>.zip``. Plans (``PL``) often use
-  ``<número>_0.zip``. Letter suffixes use ``<número><letras>.zip``.
   A new edition is often uploaded as ``<n>_0.zip``, ``<n>_1.zip``, ... while
   the previous ``<n>.zip`` stays online. Every generation is listed with HEAD;
   the newest BSB edition is chosen later. HTML pages on ``www.marinha.mil.br``
@@ -28,6 +26,7 @@ from typing import Protocol
 
 from cartas_raster.errors import SourceLayoutError
 from cartas_raster.models import IndexRecord, RemoteFile, Unresolved
+from cartas_raster.paper_catalogue import catalogue_links, newest_catalogue_url
 
 SEARCH_URL = (
     "https://idem.marinha.mil.br/geonetwork/srv/por/q"
@@ -65,6 +64,7 @@ class Discovery:
     unresolved: list[Unresolved]
     index_count: int
     head_requests: int = 0
+    catalogue_pdf_url: str | None = None
 
     @property
     def files(self) -> list[RemoteFile]:
@@ -144,6 +144,17 @@ def probe_variant_files(stem: str, head):
         found.append(item)
         index += 1
     return found
+
+
+def extra_suffix_names(stem: str, found_names: list[str], extra: int = 2) -> list[str]:
+    """Names past the first missing suffix. Used only when the paper catalogue is newer."""
+    highest = -1
+    for name in found_names:
+        match = re.fullmatch(re.escape(stem) + r"_(\d+)\.zip", name)
+        if match:
+            highest = max(highest, int(match.group(1)))
+    start = 1 if highest < 0 else highest + 2
+    return [f"{stem}_{start + offset}.zip" for offset in range(extra)]
 
 
 def scale_denominator(scale_label: str | None) -> int | None:
@@ -275,6 +286,7 @@ class DhnCatalog:
             unresolved=unresolved,
             index_count=count,
             head_requests=head_requests,
+            catalogue_pdf_url=newest_catalogue_url(catalogue_links(raw_items)),
         )
 
     def _collect_index(self) -> tuple[list[dict], int]:

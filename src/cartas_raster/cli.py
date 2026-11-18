@@ -13,7 +13,7 @@ from pathlib import Path
 
 from cartas_raster.catalog import asset_name
 from cartas_raster.chartdldr import assert_plugin_compatible
-from cartas_raster.dhn import DhnCatalog
+from cartas_raster.dhn import DhnCatalog, RASTER_BASE, extra_suffix_names, variant_stem
 from cartas_raster.edition import (
     choose_newest,
     is_newer,
@@ -21,6 +21,12 @@ from cartas_raster.edition import (
     retire_absorbed,
     view_from_bsb,
     view_from_manifest,
+)
+from cartas_raster.paper_catalogue import (
+    cache_path,
+    edition_gaps,
+    edition_year,
+    refresh_paper_catalogue,
 )
 from cartas_raster.errors import SourceLayoutError
 from cartas_raster.github_io import GitHub, SubprocessRunner, commit_paths, push_head
@@ -31,6 +37,7 @@ from cartas_raster.plan import select_for_publish, select_for_review
 from cartas_raster.review_text import proposal_document, pull_request_body, pull_request_title
 from cartas_raster.store import (
     CATALOG_PATH,
+    EDITION_GAPS_PATH,
     PROPOSALS_DIR,
     UNRESOLVED_PATH,
     add_rejection,
@@ -105,9 +112,17 @@ def run_update(args) -> int:
         f"{len(discovery.unresolved)} sem arquivo; "
         f"{discovery.head_requests} HEADs de variantes."
     )
+    ordered = _prioritize_by_change_date(discovery.charts, manifest)
+    paper_years, paper_warning = refresh_paper_catalogue(
+        catalog.transport, discovery.catalogue_pdf_url, cache_path(root)
+    )
+    if paper_warning:
+        print(f"AVISO: {paper_warning}", flush=True)
+    else:
+        print(f"Catálogo em papel: {len(paper_years)} cartas em {discovery.catalogue_pdf_url}.", flush=True)
     download_dir = args.download_dir or (root / "run" / "downloads")
     prepared, failures, retired = _select_editions(
-        catalog.transport, discovery.charts, manifest, download_dir
+        catalog.transport, ordered, manifest, download_dir, paper_years
     )
     attempts = len(failures) + len(prepared)
     if attempts >= 5 and len(failures) / attempts > 0.5:
@@ -120,6 +135,10 @@ def run_update(args) -> int:
 
     content, header_only = _split_content_changes(prepared, manifest)
     print(f"Cartas com conteúdo novo: {len(content)}. Só o cabeçalho HTTP mudou: {len(header_only)}.")
+    _stamp_change_dates(manifest, ordered)
+    gaps = _gaps_for_run(manifest, content, paper_years)
+    _write_gaps(root, gaps, paper_warning, discovery.catalogue_pdf_url)
+    _write_step_summary(gaps, paper_warning, len(paper_years))
     now = datetime.now(timezone.utc).replace(microsecond=0)
     unresolved = list(discovery.unresolved)
     for failure in failures:
@@ -351,7 +370,77 @@ def _retired_for(chart: PreparedChart, retired: list[str], manifest: dict) -> li
     ]
 
 
-def _select_editions(transport, charts, manifest: dict, download_dir: Path):
+def _prioritize_by_change_date(charts, manifest: dict):
+    stored = manifest.get("charts") or {}
+
+    def rank(group):
+        chart_id = group.record.chart_id
+        current = group.record.change_date or ""
+        previous = (stored.get(chart_id) or {}).get("change_date") or ""
+        changed = bool(current) and current != previous
+        if changed:
+            print(
+                f"Carta {chart_id} reavaliada: changeDate do GeoNetwork "
+                f"{previous or 'ausente'} → {current}. As variantes seguem sendo consultadas.",
+                flush=True,
+            )
+        return (0 if changed else 1, chart_id)
+
+    return sorted(charts, key=rank)
+
+
+def _stamp_change_dates(manifest: dict, charts) -> None:
+    for group in charts:
+        entry = manifest.get("charts", {}).get(group.record.chart_id)
+        if entry is not None and group.record.change_date:
+            entry["change_date"] = group.record.change_date
+
+
+def _gaps_for_run(manifest: dict, content: list[PreparedChart], paper_years: dict) -> list[dict]:
+    overlay = {chart_id: dict(entry) for chart_id, entry in manifest.get("charts", {}).items()}
+    for chart in content:
+        overlay[chart.remote.chart_id] = manifest_entry(chart)
+    return edition_gaps(overlay, paper_years)
+
+
+def _write_gaps(root: Path, gaps: list[dict], warning: str | None, url: str | None) -> None:
+    save_json(
+        root / EDITION_GAPS_PATH,
+        {
+            "available": warning is None,
+            "catalogue_url": url,
+            "warning": warning,
+            "charts": gaps,
+        },
+    )
+
+
+def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int) -> None:
+    lines = ["## Catálogo em papel da DHN", ""]
+    if warning:
+        lines.append(f"Aviso: {warning}")
+    else:
+        lines.append(f"Catálogo lido com {paper_count} cartas.")
+    lines.append(
+        f"Raster mais antigo que a última edição em papel: {len(gaps)}. "
+        "Essas cartas continuam publicadas."
+    )
+    for gap in gaps[:40]:
+        lines.append(
+            f"- {gap['chart_id']}: raster {gap['zip_year']} ({gap.get('zip_name')}), "
+            f"papel {gap['catalogue_year']}"
+        )
+    if len(gaps) > 40:
+        lines.append(f"- … e mais {len(gaps) - 40}. Lista completa em data/edition_gaps.json.")
+    text = "\n".join(lines) + "\n"
+    print(text, flush=True)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as handle:
+            handle.write(text)
+
+
+def _select_editions(transport, charts, manifest: dict, download_dir: Path, paper_years: dict | None = None):
     """Download variants that differ from the manifest and keep the newest edition."""
     download_dir.mkdir(parents=True, exist_ok=True)
     stored = manifest.get("charts", {})
@@ -387,6 +476,16 @@ def _select_editions(transport, charts, manifest: dict, download_dir: Path):
         if not options:
             continue
         best_remote, best_view = choose_newest(options)
+        best_remote, best_view = _extend_if_paper_is_newer(
+            transport,
+            group,
+            options,
+            downloaded,
+            best_remote,
+            best_view,
+            paper_years or {},
+            download_dir,
+        )
         if previous is not None and not is_newer(best_view, view_from_manifest(previous)):
             print(
                 f"Carta {chart_id}: a edição publicada não é mais antiga que "
@@ -403,6 +502,63 @@ def _select_editions(transport, charts, manifest: dict, download_dir: Path):
         prepared.append(packaged)
     retired = retire_absorbed(stored, chosen_urls, considered)
     return prepared, failures, retired
+
+
+def _extend_if_paper_is_newer(transport, group, options, downloaded, best_remote, best_view, paper_years, download_dir):
+    """When the paper catalogue is newer, look past the first missing suffix. Never drops the chart."""
+    paper = paper_years.get(group.record.chart_id)
+    zip_year = edition_year(best_view.source_date)
+    if paper is None or zip_year is None or zip_year >= paper or not hasattr(transport, "head"):
+        return best_remote, best_view
+    stem = variant_stem(group.record.token)
+    names = extra_suffix_names(stem, [remote.zip_name for remote, _view in options])
+    print(
+        f"Carta {group.record.chart_id}: raster {zip_year} anterior ao catálogo em papel {paper}. "
+        f"Conferindo também {', '.join(names)}.",
+        flush=True,
+    )
+    for name in names:
+        remote = _remote_from_head(transport, group.record, name)
+        if remote is None:
+            continue
+        destination = download_dir / f"{group.record.chart_id}-{name}"
+        try:
+            result = transport.get(remote.source_url)
+            if result.status != 200:
+                continue
+            destination.write_bytes(result.body)
+            packaged = package_chart(remote, destination)
+        except (ChartPackageError, OSError) as exc:
+            print(f"AVISO: {exc}", flush=True)
+            continue
+        downloaded[remote.source_url] = packaged
+        options.append((remote, view_from_bsb(packaged.bsb, packaged.zip_datetime)))
+    return choose_newest(options)
+
+
+def _remote_from_head(transport, record, zip_name: str) -> RemoteFile | None:
+    result = transport.head(RASTER_BASE + zip_name)
+    if getattr(result, "status", 0) != 200:
+        return None
+    headers = getattr(result, "headers", {}) or {}
+    content_type = headers.get("content-type", "")
+    if "zip" not in content_type.lower() and "octet-stream" not in content_type.lower():
+        return None
+    try:
+        length = int(headers.get("content-length") or 0)
+    except (TypeError, ValueError):
+        return None
+    if length <= 0:
+        return None
+    return RemoteFile(
+        chart_id=record.chart_id,
+        record=record,
+        source_url=RASTER_BASE + zip_name,
+        zip_name=zip_name,
+        content_length=length,
+        last_modified=headers.get("last-modified"),
+        etag=headers.get("etag"),
+    )
 
 
 def _split_content_changes(prepared: list[PreparedChart], manifest: dict):
@@ -495,13 +651,14 @@ def _persist_publication(runner, root, manifest, published, header_only, unresol
     unresolved_path = _write_unresolved(root, unresolved)
     if published or header_only:
         manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-        save_json(manifest_path, manifest)
+    save_json(manifest_path, manifest)
     if published or _catalog_missing(catalog_path):
         write_catalog(catalog_path, manifest["charts"], repository, now)
+    extra = [path for path in (root / EDITION_GAPS_PATH, cache_path(root)) if path.exists()]
     if commit_paths(
         runner,
         root,
-        [manifest_path, catalog_path, unresolved_path],
+        [manifest_path, catalog_path, unresolved_path, *extra],
         _commit_message(published, header_only),
     ):
         push_head(runner, root, "main")

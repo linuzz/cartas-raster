@@ -10,6 +10,8 @@ REJECTED_PATH = Path("data/rejected.json")
 UNRESOLVED_PATH = Path("data/unresolved.json")
 OVERRIDES_PATH = Path("data/source_overrides.json")
 CATALOG_PATH = Path("docs/BR_RNCProdCat.xml")
+CATALOGUE_PDF_CACHE = Path("data/catalogue_pdf.json")
+EDITION_GAPS_PATH = Path("data/edition_gaps.json")
 PROPOSALS_DIR = Path("proposals")
 
 

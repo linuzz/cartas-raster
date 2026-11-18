@@ -73,6 +73,7 @@ def manifest_entry(chart: PreparedChart) -> dict:
         "source_url": chart.remote.source_url,
         "page_url": record.page_url,
         "uuid": record.uuid,
+        "change_date": record.change_date,
         "zip_name": chart.remote.zip_name,
         "content_length": chart.remote.content_length,
         "last_modified": chart.remote.last_modified,
