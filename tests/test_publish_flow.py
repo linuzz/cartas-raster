@@ -157,6 +157,71 @@ def test_pull_request_body_has_the_fields_the_owner_reviews():
     assert parse_marker(body) == ("3332", entry["sha256"])
 
 
+def test_upload_keeps_finished_charts_when_a_later_one_fails(tmp_path: Path):
+    from cartas_raster.cli import upload_new_assets
+    from cartas_raster.github_io import CommandError
+
+    remote, data = _remote("3332")
+    first_path = tmp_path / "3332.zip"
+    first_path.write_bytes(data)
+    first = package_chart(remote, first_path)
+    remote_b, _data = _remote("1104")
+    second_path = tmp_path / "1104.zip"
+    second_path.write_bytes(data)
+    second = package_chart(remote_b, second_path)
+
+    class Publisher:
+        def __init__(self):
+            self.uploads: list[str] = []
+
+        def release_asset_sizes(self):
+            return {}
+
+        def upload_asset(self, path: Path):
+            if path.name == "BR_1104.zip":
+                raise CommandError("rede caiu")
+            self.uploads.append(path.name)
+
+    manifest: dict = {"charts": {}}
+    published = []
+    snapshots = []
+    failures = upload_new_assets(
+        [first, second],
+        manifest,
+        Publisher(),
+        published,
+        lambda: snapshots.append(set(manifest["charts"])),
+        every=1,
+    )
+    assert snapshots == [{"3332"}]
+    assert set(manifest["charts"]) == {"3332"}
+    assert [chart.remote.chart_id for chart in published] == ["3332"]
+    assert len(failures) == 1 and "1104" in failures[0]
+
+
+def test_upload_skips_a_release_asset_of_the_same_size(tmp_path: Path):
+    from cartas_raster.cli import upload_new_assets
+
+    remote, data = _remote("3332")
+    path = tmp_path / "3332.zip"
+    path.write_bytes(data)
+    prepared = package_chart(remote, path)
+
+    class Publisher:
+        def release_asset_sizes(self):
+            return {"BR_3332.zip": prepared.size}
+
+        def upload_asset(self, path: Path):
+            raise AssertionError(path.name)
+
+    manifest: dict = {"charts": {}}
+    published = []
+    failures = upload_new_assets([prepared], manifest, Publisher(), published, lambda: None, every=20)
+    assert failures == []
+    assert manifest["charts"]["3332"]["sha256"] == prepared.sha256
+    assert published == [prepared]
+
+
 def test_headers_skip_a_redownload_until_they_change():
     remote, _data = _remote()
     previous = {
