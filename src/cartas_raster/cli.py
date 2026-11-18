@@ -34,6 +34,8 @@ from cartas_raster.store import (
 )
 
 DEFAULT_REPOSITORY = "linuzz/cartas-raster"
+# Commit the manifest often enough that a killed job keeps the charts already uploaded.
+CHECKPOINT_EVERY = 20
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -217,33 +219,35 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
             print(f"Publicaria {entry['chart_id']} ({entry['title']}) edição {_edition(entry)} tamanho {entry['zip_size']}")
         print(f"Dry-run: {len(accepted)} carta(s), sem upload e sem commit.")
         return 0
-    github = GitHub(SubprocessRunner(), root, args.repository)
-    for chart in accepted:
-        asset = _asset_file(chart)
-        print(f"Enviando {asset.name}…")
-        github.upload_asset(asset)
-        manifest["charts"][chart.remote.chart_id] = manifest_entry(chart)
-    _apply_header_updates(manifest, header_only)
-    manifest_path = root / "data" / "manifest.json"
-    catalog_path = root / CATALOG_PATH
-    unresolved_path = _write_unresolved(root, unresolved)
-    if accepted or header_only:
-        manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-        save_json(manifest_path, manifest)
-    if accepted or _catalog_missing(catalog_path):
-        write_catalog(catalog_path, manifest["charts"], args.repository, now)
     runner = SubprocessRunner()
     _ensure_identity(runner, root)
-    if commit_paths(
-        runner,
-        root,
-        [manifest_path, catalog_path, unresolved_path],
-        _commit_message(accepted, header_only),
-    ):
-        push_head(runner, root, "main")
-        print("Manifesto e catálogo gravados em main.")
-    else:
-        print("Nenhuma mudança para gravar.")
+    _apply_header_updates(manifest, header_only)
+    published: list[PreparedChart] = []
+    failures: list[str] = []
+
+    def persist() -> None:
+        _persist_publication(
+            runner,
+            root,
+            manifest,
+            published,
+            header_only,
+            unresolved,
+            args.repository,
+            now,
+        )
+
+    try:
+        if accepted:
+            github = GitHub(runner, root, args.repository)
+            failures = upload_new_assets(accepted, manifest, github, published, persist)
+    finally:
+        persist()
+    if failures:
+        print(f"{len(published)} carta(s) ficaram no manifesto. Rode de novo para continuar.", flush=True)
+        for line in failures:
+            print(line, flush=True)
+        return 1
     return 0
 
 
@@ -365,6 +369,69 @@ def _write_unresolved(root: Path, items: list[Unresolved]) -> Path:
     path = root / UNRESOLVED_PATH
     save_json(path, payload)
     return path
+
+
+def upload_new_assets(accepted, manifest, github, published: list[PreparedChart], persist, every: int = CHECKPOINT_EVERY) -> list[str]:
+    """Upload charts, record each success in ``manifest``, and checkpoint along the way.
+
+    An asset already on the release with the same byte size is not uploaded again.
+    A failure on one chart does not discard charts already stored in ``manifest``.
+    """
+    failures: list[str] = []
+    sizes = github.release_asset_sizes()
+    since_commit = 0
+    for chart in accepted:
+        asset = _asset_file(chart)
+        chart_id = chart.remote.chart_id
+        try:
+            size = asset.stat().st_size
+            if sizes.get(asset.name) == size:
+                print(
+                    f"{asset.name} já está na release ({size} bytes); sem novo upload.",
+                    flush=True,
+                )
+            else:
+                print(f"Enviando {asset.name}…", flush=True)
+                github.upload_asset(asset)
+                sizes[asset.name] = size
+            manifest["charts"][chart_id] = manifest_entry(chart)
+            published.append(chart)
+            since_commit += 1
+            if since_commit >= every:
+                persist()
+                since_commit = 0
+        except Exception as exc:
+            message = f"{chart_id}: {exc}"
+            failures.append(message)
+            print(f"Falha ao publicar {chart_id}: {exc}", flush=True)
+            if _fatal_github_error(exc):
+                break
+    return failures
+
+
+def _fatal_github_error(exc: BaseException) -> bool:
+    text = str(exc)
+    lowered = text.lower()
+    return "GH_TOKEN" in text or "bad credentials" in lowered or "authentication" in lowered
+
+
+def _persist_publication(runner, root, manifest, published, header_only, unresolved, repository, now) -> None:
+    manifest_path = root / "data" / "manifest.json"
+    catalog_path = root / CATALOG_PATH
+    unresolved_path = _write_unresolved(root, unresolved)
+    if published or header_only:
+        manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        save_json(manifest_path, manifest)
+    if published or _catalog_missing(catalog_path):
+        write_catalog(catalog_path, manifest["charts"], repository, now)
+    if commit_paths(
+        runner,
+        root,
+        [manifest_path, catalog_path, unresolved_path],
+        _commit_message(published, header_only),
+    ):
+        push_head(runner, root, "main")
+        print(f"Manifesto gravado em main ({len(published)} carta(s) nesta execução).", flush=True)
 
 
 def _asset_file(chart: PreparedChart) -> Path:

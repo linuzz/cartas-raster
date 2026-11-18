@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,22 @@ RELEASE_NOTES = (
 
 class CommandError(RuntimeError):
     pass
+
+
+def require_actions_token() -> None:
+    """Fail fast inside Actions when ``gh`` would refuse to start.
+
+    On a GitHub-hosted runner ``gh`` does not pick up ``GITHUB_TOKEN`` by
+    itself. The workflow has to set ``GH_TOKEN`` (usually ``${{ github.token }}``).
+    """
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    if os.environ.get("GH_TOKEN"):
+        return
+    raise CommandError(
+        "GH_TOKEN não está definido. No GitHub Actions o gh não usa GITHUB_TOKEN "
+        "sozinho. O job precisa de env: GH_TOKEN: ${{ github.token }}."
+    )
 
 
 @dataclass
@@ -50,9 +67,11 @@ class SubprocessRunner:
 
 class GitHub:
     def __init__(self, runner: SubprocessRunner, root: Path, repository: str):
+        require_actions_token()
         self.runner = runner
         self.root = root
         self.repository = repository
+        self._release_ready = False
 
     def list_open_prs(self) -> list[OpenPullRequest]:
         raw = self.runner.run(
@@ -156,28 +175,54 @@ class GitHub:
         )
 
     def ensure_release(self) -> None:
+        if self._release_ready:
+            return
         view = self.runner.run(
             ["gh", "release", "view", RELEASE_TAG, "--repo", self.repository],
             cwd=self.root,
             check=False,
         )
-        if view.code == 0:
-            return
-        self.runner.run(
+        if view.code != 0:
+            self.runner.run(
+                [
+                    "gh",
+                    "release",
+                    "create",
+                    RELEASE_TAG,
+                    "--repo",
+                    self.repository,
+                    "--title",
+                    RELEASE_TITLE,
+                    "--notes",
+                    RELEASE_NOTES,
+                ],
+                cwd=self.root,
+            )
+        self._release_ready = True
+
+    def release_asset_sizes(self) -> dict[str, int]:
+        """Name → size for assets already on the ``cartas`` release."""
+        self.ensure_release()
+        view = self.runner.run(
             [
                 "gh",
                 "release",
-                "create",
+                "view",
                 RELEASE_TAG,
                 "--repo",
                 self.repository,
-                "--title",
-                RELEASE_TITLE,
-                "--notes",
-                RELEASE_NOTES,
+                "--json",
+                "assets",
             ],
             cwd=self.root,
         )
+        payload = json.loads(view.stdout or "{}")
+        sizes: dict[str, int] = {}
+        for asset in payload.get("assets") or []:
+            name = asset.get("name")
+            if name:
+                sizes[str(name)] = int(asset.get("size") or 0)
+        return sizes
 
     def upload_asset(self, path: Path) -> None:
         self.ensure_release()

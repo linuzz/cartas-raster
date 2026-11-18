@@ -64,6 +64,8 @@ Mudança de conteúdo vira upload na Release `cartas` e atualização do `data/m
 
 Uma edição que já foi rejeitada no modo `review` (está em `data/rejected.json`) continua de fora até o arquivo na DHN mudar, mesmo depois de voltar para `auto`. Apague a entrada correspondente em `rejected.json` se quiser publicar essa edição mesmo assim.
 
+O manifesto é gravado em `main` a cada 20 cartas enviadas. Se a execução cair no meio, o que já foi para a Release permanece. A execução seguinte não envia de novo um asset com o mesmo nome e o mesmo tamanho, e segue a partir do manifesto.
+
 ### `review`
 
 Cada carta nova ou com arquivo diferente abre **um pull request**. O PR não altera o manifesto compartilhado (dois PRs não conflitam): ele adiciona `proposals/<número>.json`. A descrição traz número, título, edição anterior e nova, tamanho, URL de origem na DHN e o trecho `<chart>` que entrará no catálogo.

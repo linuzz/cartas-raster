@@ -33,6 +33,16 @@ jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    # gh refuses to run in Actions unless GH_TOKEN is set. GITHUB_TOKEN alone is not enough.
+    # git push uses the credential stored by actions/checkout (persist-credentials), not gh.
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PYTHONUNBUFFERED: "1"
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
     outputs:
       pages: ${{ steps.outcome.outputs.pages }}
     steps:
@@ -40,6 +50,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: true
 
       - uses: actions/setup-python@v5
         with:
@@ -87,22 +98,26 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             ARGS+=(--dry-run)
           fi
+          set +e
           python -m cartas_raster.cli "${ARGS[@]}"
+          code=$?
+          set -e
           if [ "${{ steps.mode.outputs.mode }}" = "auto" ] && [ "${{ inputs.dry_run }}" != "true" ]; then
             echo "pages=true" >> "$GITHUB_OUTPUT"
           else
             echo "pages=false" >> "$GITHUB_OUTPUT"
           fi
+          exit "$code"
 
       - name: Enviar catálogo para o GitHub Pages
-        if: steps.outcome.outputs.pages == 'true'
+        if: always() && steps.outcome.outputs.pages == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
   deploy:
     needs: update
-    if: needs.update.outputs.pages == 'true'
+    if: always() && needs.update.outputs.pages == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
