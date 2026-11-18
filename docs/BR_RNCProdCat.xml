@@ -6000,4 +6000,85 @@
     <zipfile_size>642705</zipfile_size>
     <target_filename>811.zip</target_filename>
   </chart>
+  <chart>
+    <number>821</number>
+    <title>Porto de Cabedelo (1:15000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>12/01/2025</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_821.zip</zipfile_location>
+    <zipfile_datetime>20251128_135057</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-11-28T13:50:57Z</zipfile_datetime_iso8601>
+    <zipfile_size>656983</zipfile_size>
+    <target_filename>821.zip</target_filename>
+  </chart>
+  <chart>
+    <number>902</number>
+    <title>Porto do Recife (1:15000)</title>
+    <source_edition>5</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2024</ntm_edition>
+    <source_date>08/31/1989</source_date>
+    <ntm_date>09/02/2024</ntm_date>
+    <ntm_edition_last_correction>2024-204</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_902.zip</zipfile_location>
+    <zipfile_datetime>20241202_134200</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:00Z</zipfile_datetime_iso8601>
+    <zipfile_size>2001297</zipfile_size>
+    <target_filename>902.zip</target_filename>
+  </chart>
+  <chart>
+    <number>912</number>
+    <title>Porto de Suape (1:15000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>09/30/2024</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_912.zip</zipfile_location>
+    <zipfile_datetime>20241202_134219</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:19Z</zipfile_datetime_iso8601>
+    <zipfile_size>491734</zipfile_size>
+    <target_filename>912.zip</target_filename>
+  </chart>
+  <chart>
+    <number>920</number>
+    <title>Proximidades do Porto de Maceió (1:80000)</title>
+    <source_edition>2</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2024</ntm_edition>
+    <source_date>05/25/2005</source_date>
+    <ntm_date>10/25/2024</ntm_date>
+    <ntm_edition_last_correction>2024-259</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_920.zip</zipfile_location>
+    <zipfile_datetime>20241202_134215</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:15Z</zipfile_datetime_iso8601>
+    <zipfile_size>1161330</zipfile_size>
+    <target_filename>920.zip</target_filename>
+  </chart>
+  <chart>
+    <number>921</number>
+    <title>Porto de Maceió (1:20000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>09/27/2024</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_921.zip</zipfile_location>
+    <zipfile_datetime>20241202_134212</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:12Z</zipfile_datetime_iso8601>
+    <zipfile_size>476134</zipfile_size>
+    <target_filename>921.zip</target_filename>
+  </chart>
+  <chart>
+    <number>930</number>
+    <title>Proximidades do Porto do Recife (1:100000)</title>
+    <source_edition>2</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2025</ntm_edition>
+    <source_date>05/20/2004</source_date>
+    <ntm_date>04/10/2025</ntm_date>
+    <ntm_edition_last_correction>2025-45</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_930.zip</zipfile_location>
+    <zipfile_datetime>20250411_144404</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-11T14:44:04Z</zipfile_datetime_iso8601>
+    <zipfile_size>1502435</zipfile_size>
+    <target_filename>930.zip</target_filename>
+  </chart>
 </RncProductCatalog>
