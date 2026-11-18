@@ -23,6 +23,7 @@ from cartas_raster.edition import (
     view_from_manifest,
 )
 from cartas_raster.paper_catalogue import (
+    SKIPPED_COMPARISON,
     cache_path,
     edition_gaps,
     edition_year,
@@ -136,9 +137,10 @@ def run_update(args) -> int:
     content, header_only = _split_content_changes(prepared, manifest)
     print(f"Cartas com conteúdo novo: {len(content)}. Só o cabeçalho HTTP mudou: {len(header_only)}.")
     _stamp_change_dates(manifest, ordered)
-    gaps = _gaps_for_run(manifest, content, paper_years)
-    _write_gaps(root, gaps, paper_warning, discovery.catalogue_pdf_url)
-    _write_step_summary(gaps, paper_warning, len(paper_years))
+    compared = bool(paper_years)
+    gaps = _gaps_for_run(manifest, content, paper_years) if compared else []
+    _write_gaps(root, gaps, paper_warning, discovery.catalogue_pdf_url, compared)
+    _write_step_summary(gaps, paper_warning, len(paper_years), compared)
     now = datetime.now(timezone.utc).replace(microsecond=0)
     unresolved = list(discovery.unresolved)
     for failure in failures:
@@ -403,35 +405,43 @@ def _gaps_for_run(manifest: dict, content: list[PreparedChart], paper_years: dic
     return edition_gaps(overlay, paper_years)
 
 
-def _write_gaps(root: Path, gaps: list[dict], warning: str | None, url: str | None) -> None:
+def _write_gaps(root: Path, gaps: list[dict], warning: str | None, url: str | None, compared: bool) -> None:
     save_json(
         root / EDITION_GAPS_PATH,
         {
-            "available": warning is None,
+            "compared": compared,
+            "available": compared and warning is None,
             "catalogue_url": url,
-            "warning": warning,
-            "charts": gaps,
+            "warning": None if compared else SKIPPED_COMPARISON,
+            "detail": warning,
+            "charts": gaps if compared else [],
         },
     )
 
 
-def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int) -> None:
+def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int, compared: bool) -> None:
     lines = ["## Catálogo em papel da DHN", ""]
-    if warning:
-        lines.append(f"Aviso: {warning}")
+    if not compared:
+        lines.append(SKIPPED_COMPARISON)
+        if warning:
+            lines.append(f"Aviso: {warning}")
     else:
-        lines.append(f"Catálogo lido com {paper_count} cartas.")
-    lines.append(
-        f"Raster mais antigo que a última edição em papel: {len(gaps)}. "
-        "Essas cartas continuam publicadas."
-    )
-    for gap in gaps[:40]:
+        if warning:
+            lines.append(f"Aviso: {warning}")
+        else:
+            lines.append(f"Catálogo lido com {paper_count} cartas.")
         lines.append(
-            f"- {gap['chart_id']}: raster {gap['zip_year']} ({gap.get('zip_name')}), "
-            f"papel {gap['catalogue_year']}"
+            f"Raster mais antigo que a última edição em papel: {len(gaps)}. "
+            "Essas cartas continuam publicadas."
         )
-    if len(gaps) > 40:
-        lines.append(f"- … e mais {len(gaps) - 40}. Lista completa em data/edition_gaps.json.")
+    if compared:
+        for gap in gaps[:40]:
+            lines.append(
+                f"- {gap['chart_id']}: raster {gap['zip_year']} ({gap.get('zip_name')}), "
+                f"papel {gap['catalogue_year']}"
+            )
+        if len(gaps) > 40:
+            lines.append(f"- … e mais {len(gaps) - 40}. Lista completa em data/edition_gaps.json.")
     text = "\n".join(lines) + "\n"
     print(text, flush=True)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")

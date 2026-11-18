@@ -178,6 +178,21 @@ def test_low_resolution_ratio_does_not_publish(monkeypatch):
         DhnCatalog(transport).discover()
 
 
+def test_plan_without_its_own_zip_is_covered_by_the_parent():
+    from cartas_raster.dhn import ChartVariants, _plans_covered_by_parent
+    from cartas_raster.models import IndexRecord, Unresolved
+
+    parent = IndexRecord("52", "52", "Nome", None, None, "Carta 52", "u", None, None, None, None)
+    charts = [ChartVariants(parent, [])]
+    unresolved = [
+        Unresolved("52PL", "Carta 52 PL", "nenhum ZIP encontrado para o número da carta", None),
+        Unresolved("2140APL", "Carta 2140A PL", "nenhum ZIP encontrado para o número da carta", None),
+    ]
+    rewritten = _plans_covered_by_parent(charts, unresolved)
+    assert rewritten[0].reason.startswith("coberta pela carta 52")
+    assert "nenhum ZIP" in rewritten[1].reason
+
+
 def test_shared_zip_keeps_the_sheet():
     from cartas_raster.dhn import _drop_shared_urls
     from cartas_raster.models import IndexRecord, RemoteFile

@@ -146,6 +146,27 @@ def probe_variant_files(stem: str, head):
     return found
 
 
+def _plans_covered_by_parent(charts: list[ChartVariants], unresolved: list[Unresolved]) -> list[Unresolved]:
+    """A plan with no ZIP of its own is inside the parent chart, not a missing file."""
+    resolved = {chart.record.chart_id for chart in charts}
+    rewritten: list[Unresolved] = []
+    for item in unresolved:
+        chart_id = item.chart_id
+        parent = chart_id[:-2] if chart_id.endswith("PL") and len(chart_id) > 2 else ""
+        if parent and parent in resolved:
+            rewritten.append(
+                Unresolved(
+                    chart_id=chart_id,
+                    title=item.title,
+                    reason=f"coberta pela carta {parent}; a planta está no BSB da carta principal",
+                    page_url=item.page_url,
+                )
+            )
+        else:
+            rewritten.append(item)
+    return rewritten
+
+
 def extra_suffix_names(stem: str, found_names: list[str], extra: int = 2) -> list[str]:
     """Names past the first missing suffix. Used only when the paper catalogue is newer."""
     highest = -1
@@ -359,7 +380,7 @@ class DhnCatalog:
                 )
             else:
                 charts.append(ChartVariants(record=record, variants=found))
-        return charts, unresolved, head_requests
+        return charts, _plans_covered_by_parent(charts, unresolved), head_requests
 
     def _probe_record(self, record: IndexRecord) -> tuple[list[RemoteFile], int]:
         stem = variant_stem(record.token)

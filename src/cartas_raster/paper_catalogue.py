@@ -13,6 +13,7 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from cartas_raster.store import CATALOGUE_PDF_CACHE
 
@@ -23,9 +24,27 @@ _PATH_DATE = re.compile(r"/(\d{4})-(\d{2})/")
 _REVISION = re.compile(r"rev(\d+)", re.IGNORECASE)
 
 
-def assets_pdf_url(url: str) -> str:
-    """The CHM file tree is also served by assets.marinha.mil.br, without Cloudflare."""
-    return re.sub(r"^https://(?:www\.)?marinha\.mil\.br/", "https://assets.marinha.mil.br/", url, count=1)
+SKIPPED_COMPARISON = "Comparação com o catálogo em papel não realizada (PDF indisponível)."
+
+
+def assets_pdf_url(url: str) -> str | None:
+    """Point the catalogue PDF at assets.marinha.mil.br and encode the path once.
+
+    GeoNetwork sometimes glues two schemes into one string
+    (``https://www.mhttps://www.marinha.mil.br/...``). That host does not
+    resolve. The real path always starts at the last ``http(s)://``.
+    """
+    cleaned = url.strip()
+    for marker in ("https://", "http://"):
+        last = cleaned.rfind(marker)
+        if last > 0:
+            cleaned = cleaned[last:]
+            break
+    parts = urlsplit(cleaned)
+    if not parts.path.lower().endswith(".pdf"):
+        return None
+    quoted_path = "/".join(quote(unquote(segment), safe="") for segment in parts.path.split("/"))
+    return urlunsplit(("https", "assets.marinha.mil.br", quoted_path, "", ""))
 
 
 def catalogue_links(items: list[dict]) -> list[str]:
@@ -46,9 +65,10 @@ def catalogue_links(items: list[dict]) -> list[str]:
             if not url.lower().split("?", 1)[0].endswith(".pdf"):
                 continue
             absolute = assets_pdf_url(url)
-            if absolute not in seen:
-                seen.add(absolute)
-                found.append(absolute)
+            if not absolute or absolute in seen:
+                continue
+            seen.add(absolute)
+            found.append(absolute)
     return found
 
 
@@ -159,6 +179,7 @@ def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tup
     if not url:
         warning = "Catálogo em PDF não encontrado nos registros do GeoNetwork."
         return _years(cached_years), warning if not cached_years else warning + " Usando a cópia em cache."
+    print(f"Consultando catálogo em papel: {url}", flush=True)
     try:
         head = transport.head(url)
         if getattr(head, "status", 0) != 200:
@@ -191,7 +212,7 @@ def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tup
         cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return years, None
     except Exception as exc:
-        warning = f"Catálogo em PDF indisponível ({exc})."
+        warning = f"Catálogo em PDF indisponível em {url} ({exc})."
         if cached_years:
             warning += " Usando a cópia em cache."
             return _years(cached_years), warning

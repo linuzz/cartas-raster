@@ -2,7 +2,11 @@
 
 from pathlib import Path
 
+from urllib.parse import urlsplit
+
 from cartas_raster.paper_catalogue import (
+    SKIPPED_COMPARISON,
+    assets_pdf_url,
     catalogue_links,
     edition_gaps,
     newest_catalogue_url,
@@ -65,6 +69,38 @@ def test_unavailable_pdf_does_not_raise(tmp_path: Path):
     assert years == {}
     assert warning
     assert "indisponível" in warning
+
+
+def test_glued_geonetwork_host_is_rewritten_without_double_encoding():
+    plain = (
+        "https://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/"
+        "2026-03/CAT-15ED-2026-2030%20-FOL4-2026_rev3244.pdf"
+    )
+    glued = "https://www.m" + plain
+    broken_scheme = "h" + plain
+    for raw in (plain, glued, broken_scheme):
+        built = assets_pdf_url(raw)
+        assert built is not None
+        parts = urlsplit(built)
+        assert parts.netloc == "assets.marinha.mil.br"
+        assert "%20" in parts.path
+        assert "%2520" not in built
+        assert " " not in built
+    chosen = newest_catalogue_url(catalogue_links([
+        {"link": [f"Catálogo de Cartas e Publicações||{glued}|WWW:DOWNLOAD|application/pdf|1"]},
+        {"link": [f"Catálogo de Cartas e Publicações||{plain}|WWW:DOWNLOAD|application/pdf|1"]},
+    ]))
+    assert urlsplit(chosen).netloc == "assets.marinha.mil.br"
+
+
+def test_skipped_comparison_does_not_claim_zero_gaps(capsys, tmp_path: Path):
+    from cartas_raster.cli import _write_step_summary
+
+    _write_step_summary([], "Catálogo em PDF indisponível em https://www.mhttps/x.pdf (Name or service not known).", 0, False)
+    printed = capsys.readouterr().out
+    assert SKIPPED_COMPARISON in printed
+    assert "Raster mais antigo" not in printed
+    assert ": 0" not in printed
 
 
 def test_newest_pdf_link_follows_the_revision_in_the_records():
