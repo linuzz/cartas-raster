@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RncProductCatalog>
+  <header>
+    <title>Cartas Náuticas Raster DHN — Marinha do Brasil</title>
+    <date_created>2026-11-18</date_created>
+    <time_created>12:00:00</time_created>
+    <date_valid>2026-11-18</date_valid>
+    <time_valid>12:00:00</time_valid>
+    <dt_valid>2026-11-18T12:00:00Z</dt_valid>
+    <ref_spec>Rnc Product Catalog</ref_spec>
+    <ref_spec_vers>1.0</ref_spec_vers>
+    <s62AgencyCode>83</s62AgencyCode>
+  </header>
+</RncProductCatalog>
