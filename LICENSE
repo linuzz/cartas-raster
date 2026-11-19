@@ -20,6 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-The nautical charts discovered by this software are not part of the Software.
-They are published by the Diretoria de Hidrografia e Navegação (Brazilian
-Navy) and remain under that authority's copyright and terms of use.
+Nota de escopo (não altera o texto da licença MIT acima):
+
+A licença MIT cobre só o código deste repositório. As cartas, os metadados
+provenientes da DHN e o certificado empacotado não estão cobertos. Os
+direitos sobre esses materiais permanecem com os respectivos titulares.

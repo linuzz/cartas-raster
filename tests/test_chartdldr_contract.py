@@ -15,7 +15,7 @@ OpenCPN ``plugins/chartdldr_pi/src/chartcatalog.cpp`` (master):
 
 from datetime import datetime, timezone
 
-from cartas_raster.catalog import render_catalog
+from cartas_raster.catalog import render_catalog, render_pages_index
 from cartas_raster.chartdldr import assert_plugin_compatible, parse_catalog, wx_parse_date
 
 
@@ -42,7 +42,7 @@ def test_generated_catalog_matches_plugin_fields():
     )
     parsed = assert_plugin_compatible(xml)
     assert parsed.root_name == "RncProductCatalog"
-    assert parsed.title.startswith("Cartas Náuticas Raster DHN")
+    assert parsed.title == "Cartas Raster DHN — catálogo não oficial (linuzz/cartas-raster)"
     assert parsed.dt_valid == datetime(2026, 11, 18, 15, 0, tzinfo=timezone.utc)
     assert len(parsed.charts) == 1
     chart = parsed.charts[0]
@@ -135,3 +135,26 @@ def test_empty_catalog_is_valid():
     xml = render_catalog([], generated_at=datetime(2026, 11, 18, tzinfo=timezone.utc), repository="linuzz/cartas-raster")
     parsed = assert_plugin_compatible(xml)
     assert parsed.charts == []
+
+
+def test_pages_index_lists_the_check_date_sha_and_source():
+    page = render_pages_index(
+        {
+            "1404": {
+                "sha256": "abc123",
+                "source_url": "https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/1404.zip",
+            }
+        },
+        datetime(2026, 11, 19, 12, 0, tzinfo=timezone.utc),
+    )
+    assert "Catalogação não oficial" in page
+    assert "2026-11-19 12:00:00 UTC" in page
+    assert "abc123" in page
+    assert "1404.zip" in page
+    assert "NORMAM-511/DHN" in page
+    assert "não estão cobertos pela licença MIT" in page
+    lowered = page.lower()
+    assert "redistrib" not in lowered
+    assert "republic" not in lowered
+    assert "espelho" not in lowered
+    assert "@" not in page

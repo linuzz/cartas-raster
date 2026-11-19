@@ -12,7 +12,7 @@ import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cartas_raster.catalog import asset_name
+from cartas_raster.catalog import asset_name, write_pages_index
 from cartas_raster.chartdldr import assert_plugin_compatible
 from cartas_raster.dhn import DhnCatalog, RASTER_BASE, extra_suffix_names, variant_stem
 from cartas_raster.edition import (
@@ -224,7 +224,7 @@ def publish_merged(args) -> int:
     transport = UrllibTransport()
     result = transport.get(source_url)
     if result.status != 200:
-        raise ChartPackageError(f"{chart_id}: a DHN respondeu HTTP {result.status} ao republicar")
+        raise ChartPackageError(f"{chart_id}: a DHN respondeu HTTP {result.status} ao enviar o ZIP de novo")
     download_dir = root / "run" / "downloads"
     raw_path = materialize_verified_zip(download_dir, zip_name, result.body, expected_sha)
     remote = RemoteFile(
@@ -256,12 +256,14 @@ def publish_merged(args) -> int:
             print(f"Remove a entrada duplicada da carta {retired_id}.")
     manifest["updated_at"] = datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
     catalog_path = root / CATALOG_PATH
+    checked = datetime.now(timezone.utc)
     write_catalog(
         catalog_path,
         manifest["charts"],
         args.repository,
-        datetime.now(timezone.utc),
+        checked,
     )
+    write_pages_index(root / "docs" / "index.html", manifest["charts"], checked)
     save_json(root / "data" / "manifest.json", manifest)
     proposal_path = root / PROPOSALS_DIR / f"{chart_id}.json"
     if proposal_path.exists():
@@ -271,7 +273,7 @@ def publish_merged(args) -> int:
     committed = commit_paths(
         runner,
         root,
-        [root / "data" / "manifest.json", catalog_path, proposal_path],
+        [root / "data" / "manifest.json", catalog_path, root / "docs" / "index.html", proposal_path],
         f"Publica carta {chart_id}",
     )
     if committed:
@@ -436,8 +438,10 @@ def _apply_review(args, root, manifest, rejected, content, header_only, unresolv
         manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         save_json(manifest_path, manifest)
     _ensure_identity(runner, root)
+    pages_index = root / "docs" / "index.html"
+    write_pages_index(pages_index, manifest["charts"], now)
     cache_file = root / VARIANT_CACHE_PATH
-    review_paths = [manifest_path, unresolved_path]
+    review_paths = [manifest_path, unresolved_path, pages_index]
     if cache_file.exists():
         review_paths.append(cache_file)
     if header_only and commit_paths(
@@ -450,7 +454,7 @@ def _apply_review(args, root, manifest, rejected, content, header_only, unresolv
     elif commit_paths(
         runner,
         root,
-        [unresolved_path, *([cache_file] if cache_file.exists() else [])],
+        [unresolved_path, pages_index, *([cache_file] if cache_file.exists() else [])],
         "Atualiza a lista de cartas sem ZIP",
     ):
         push_head(runner, root, "main")
@@ -865,6 +869,8 @@ def _persist_publication(
     save_json(manifest_path, manifest)
     if published or rewrite_catalog or _catalog_missing(catalog_path):
         write_catalog(catalog_path, manifest["charts"], repository, now)
+    pages_index = root / "docs" / "index.html"
+    write_pages_index(pages_index, manifest["charts"], now)
     extra = [
         path
         for path in (root / EDITION_GAPS_PATH, cache_path(root), root / VARIANT_CACHE_PATH)
@@ -873,7 +879,7 @@ def _persist_publication(
     if commit_paths(
         runner,
         root,
-        [manifest_path, catalog_path, unresolved_path, *extra],
+        [manifest_path, catalog_path, pages_index, unresolved_path, *extra],
         _commit_message(published, header_only, removed=rewrite_catalog and not published),
     ):
         push_head(runner, root, "main")
@@ -897,13 +903,13 @@ def heal_release_digests(root: Path, manifest: dict, github: GitHub, transport) 
         try:
             require_raster_url(source, zip_name)
         except ChartPackageError as exc:
-            print(f"AVISO: {chart_id}: não republico o asset ({exc}).", flush=True)
+            print(f"AVISO: {chart_id}: não reenvio o asset ({exc}).", flush=True)
             continue
-        print(f"Republicando {name}: o SHA-256 da Release difere do manifesto.", flush=True)
+        print(f"Enviando de novo {name}: o SHA-256 da Release difere do manifesto.", flush=True)
         try:
             result = transport.get(source)
             if getattr(result, "status", 0) != 200:
-                print(f"AVISO: {chart_id}: HTTP {getattr(result, 'status', '?')} ao republicar.", flush=True)
+                print(f"AVISO: {chart_id}: HTTP {getattr(result, 'status', '?')} ao enviar o ZIP de novo.", flush=True)
                 continue
             body = result.body
             if hashlib.sha256(body).hexdigest() != expected:
