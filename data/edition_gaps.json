@@ -1,6 +1,193 @@
 {
-  "available": false,
-  "catalogue_url": "https://www.mhttps://www.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/2026-03/CAT-15ED-2026-2030%20-FOL4-2026_rev3244.pdf",
-  "charts": [],
-  "warning": "Catálogo em PDF indisponível (<urlopen error [Errno -2] Name or service not known>)."
+  "available": true,
+  "catalogue_url": "https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/2026-03/CAT-15ED-2026-2030%20-FOL4-2026_rev3244.pdf",
+  "charts": [
+    {
+      "catalogue_year": 1971,
+      "chart_id": "21",
+      "source_date": "02/02/1965",
+      "source_edition": 3,
+      "zip_name": "21_2.zip",
+      "zip_year": 1965
+    },
+    {
+      "catalogue_year": 2010,
+      "chart_id": "21100",
+      "source_date": "11/20/2009",
+      "source_edition": 1,
+      "zip_name": "21100.zip",
+      "zip_year": 2009
+    },
+    {
+      "catalogue_year": 2022,
+      "chart_id": "2133",
+      "source_date": "09/28/2021",
+      "source_edition": 1,
+      "zip_name": "2133_0.zip",
+      "zip_year": 2021
+    },
+    {
+      "catalogue_year": 2023,
+      "chart_id": "221",
+      "source_date": "09/28/2015",
+      "source_edition": 2,
+      "zip_name": "221.zip",
+      "zip_year": 2015
+    },
+    {
+      "catalogue_year": 2024,
+      "chart_id": "222",
+      "source_date": "12/29/2023",
+      "source_edition": 1,
+      "zip_name": "222.zip",
+      "zip_year": 2023
+    },
+    {
+      "catalogue_year": 2017,
+      "chart_id": "3307",
+      "source_date": "12/15/2016",
+      "source_edition": 3,
+      "zip_name": "3307_0.zip",
+      "zip_year": 2016
+    },
+    {
+      "catalogue_year": 2021,
+      "chart_id": "3312",
+      "source_date": "04/02/2009",
+      "source_edition": 2,
+      "zip_name": "3312.zip",
+      "zip_year": 2009
+    },
+    {
+      "catalogue_year": 2023,
+      "chart_id": "3316",
+      "source_date": "03/25/2013",
+      "source_edition": 3,
+      "zip_name": "3316.zip",
+      "zip_year": 2013
+    },
+    {
+      "catalogue_year": 2024,
+      "chart_id": "3318",
+      "source_date": "03/25/2013",
+      "source_edition": 2,
+      "zip_name": "3318_0.zip",
+      "zip_year": 2013
+    },
+    {
+      "catalogue_year": 2023,
+      "chart_id": "3319",
+      "source_date": "05/27/2013",
+      "source_edition": 2,
+      "zip_name": "3319.zip",
+      "zip_year": 2013
+    },
+    {
+      "catalogue_year": 2021,
+      "chart_id": "3338",
+      "source_date": "04/10/2011",
+      "source_edition": 2,
+      "zip_name": "3338_0.zip",
+      "zip_year": 2011
+    },
+    {
+      "catalogue_year": 2025,
+      "chart_id": "3349",
+      "source_date": "12/13/2012",
+      "source_edition": 3,
+      "zip_name": "3349_0.zip",
+      "zip_year": 2012
+    },
+    {
+      "catalogue_year": 2025,
+      "chart_id": "3350",
+      "source_date": "03/07/2019",
+      "source_edition": 3,
+      "zip_name": "3350_0.zip",
+      "zip_year": 2019
+    },
+    {
+      "catalogue_year": 2021,
+      "chart_id": "3364",
+      "source_date": "08/01/2008",
+      "source_edition": 2,
+      "zip_name": "3364.zip",
+      "zip_year": 2008
+    },
+    {
+      "catalogue_year": 2022,
+      "chart_id": "3365",
+      "source_date": "08/01/2008",
+      "source_edition": 3,
+      "zip_name": "3365.zip",
+      "zip_year": 2008
+    },
+    {
+      "catalogue_year": 2022,
+      "chart_id": "3366",
+      "source_date": "09/30/2015",
+      "source_edition": 3,
+      "zip_name": "3366.zip",
+      "zip_year": 2015
+    },
+    {
+      "catalogue_year": 2022,
+      "chart_id": "3372",
+      "source_date": "04/10/2010",
+      "source_edition": 2,
+      "zip_name": "3372_0.zip",
+      "zip_year": 2010
+    },
+    {
+      "catalogue_year": 2018,
+      "chart_id": "3394",
+      "source_date": "08/05/2010",
+      "source_edition": 2,
+      "zip_name": "3394.zip",
+      "zip_year": 2010
+    },
+    {
+      "catalogue_year": 2018,
+      "chart_id": "4022",
+      "source_date": "11/08/2017",
+      "source_edition": 1,
+      "zip_name": "4022_0.zip",
+      "zip_year": 2017
+    },
+    {
+      "catalogue_year": 2016,
+      "chart_id": "4032",
+      "source_date": "09/30/2015",
+      "source_edition": 1,
+      "zip_name": "4032_0.zip",
+      "zip_year": 2015
+    },
+    {
+      "catalogue_year": 2014,
+      "chart_id": "4361",
+      "source_date": "04/15/2013",
+      "source_edition": 1,
+      "zip_name": "4361.zip",
+      "zip_year": 2013
+    },
+    {
+      "catalogue_year": 1985,
+      "chart_id": "52",
+      "source_date": "10/29/1979",
+      "source_edition": 3,
+      "zip_name": "52_0.zip",
+      "zip_year": 1979
+    },
+    {
+      "catalogue_year": 2003,
+      "chart_id": "704",
+      "source_date": "12/27/2002",
+      "source_edition": 1,
+      "zip_name": "704_0.zip",
+      "zip_year": 2002
+    }
+  ],
+  "compared": true,
+  "detail": null,
+  "warning": null
 }
