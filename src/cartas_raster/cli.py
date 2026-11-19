@@ -263,7 +263,7 @@ def publish_merged(args) -> int:
         args.repository,
         checked,
     )
-    write_pages_index(root / "docs" / "index.html", manifest["charts"], checked)
+    write_pages_index(root / "docs" / "index.html", checked)
     save_json(root / "data" / "manifest.json", manifest)
     proposal_path = root / PROPOSALS_DIR / f"{chart_id}.json"
     if proposal_path.exists():
@@ -439,7 +439,7 @@ def _apply_review(args, root, manifest, rejected, content, header_only, unresolv
         save_json(manifest_path, manifest)
     _ensure_identity(runner, root)
     pages_index = root / "docs" / "index.html"
-    write_pages_index(pages_index, manifest["charts"], now)
+    write_pages_index(pages_index, now)
     cache_file = root / VARIANT_CACHE_PATH
     review_paths = [manifest_path, unresolved_path, pages_index]
     if cache_file.exists():
@@ -870,7 +870,7 @@ def _persist_publication(
     if published or rewrite_catalog or _catalog_missing(catalog_path):
         write_catalog(catalog_path, manifest["charts"], repository, now)
     pages_index = root / "docs" / "index.html"
-    write_pages_index(pages_index, manifest["charts"], now)
+    write_pages_index(pages_index, now)
     extra = [
         path
         for path in (root / EDITION_GAPS_PATH, cache_path(root), root / VARIANT_CACHE_PATH)

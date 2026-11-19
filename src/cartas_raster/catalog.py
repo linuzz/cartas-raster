@@ -27,28 +27,10 @@ def asset_url(repository: str, chart_id: str) -> str:
     return f"https://github.com/{repository}/releases/download/{RELEASE_TAG}/{asset_name(chart_id)}"
 
 
-def render_pages_index(charts: dict, checked_at: datetime) -> str:
+def render_pages_index(checked_at: datetime) -> str:
     """Human page for GitHub Pages. The OpenCPN catalogue stays in the XML."""
     moment = checked_at.astimezone(timezone.utc).replace(microsecond=0)
     stamp = moment.strftime("%Y-%m-%d %H:%M:%S UTC")
-    rows = []
-    for chart_id in sorted(charts, key=str):
-        entry = charts[chart_id] or {}
-        sha = html.escape(str(entry.get("sha256") or "—"))
-        source = str(entry.get("source_url") or "")
-        if source:
-            safe = html.escape(source, quote=True)
-            origin = f'<a href="{safe}"><code>{safe}</code></a>'
-        else:
-            origin = "—"
-        rows.append(
-            "<tr>"
-            f"<td>{html.escape(str(chart_id))}</td>"
-            f"<td><code>{sha}</code></td>"
-            f"<td>{origin}</td>"
-            "</tr>"
-        )
-    body = "\n".join(rows)
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -56,25 +38,25 @@ def render_pages_index(charts: dict, checked_at: datetime) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Catálogo não oficial das cartas raster da DHN</title>
   <style>
-    body {{ font-family: Georgia, serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #1c2430; }}
-    code {{ font-family: ui-monospace, monospace; font-size: 0.85em; }}
+    body {{ font-family: Georgia, serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #1c2430; }}
+    code {{ font-family: ui-monospace, monospace; font-size: 0.95em; }}
     a {{ color: #0b3a66; }}
-    table {{ border-collapse: collapse; width: 100%; font-size: 0.85rem; }}
-    th, td {{ border-top: 1px solid #d5dde6; text-align: left; vertical-align: top; padding: 0.35rem 0.4rem; }}
-    td:nth-child(2) {{ word-break: break-all; }}
   </style>
 </head>
 <body>
   <h1>Catalogação não oficial das cartas raster da DHN</h1>
   <p>
-    Catálogo no formato <code>RncProductCatalog</code> para o plugin Chart Downloader do OpenCPN.
-    Este projeto não tem vínculo com a Marinha do Brasil nem com a Diretoria de Hidrografia e Navegação.
+    Projeto amador, feito por uma pessoa, sem vínculo com a Marinha do Brasil
+    nem com a Diretoria de Hidrografia e Navegação.
+    Catálogo no formato <code>RncProductCatalog</code> para o plugin Chart Downloader do OpenCPN,
+    apenas para uso acadêmico.
     As cartas oficiais são as da DHN, segundo a NORMAM-511/DHN.
     A fonte oficial é o <a href="https://www.marinha.mil.br/chm">site da DHN</a>.
   </p>
   <p>
-    Sem garantia. Este catálogo não serve para navegar no lugar das cartas oficiais.
-    Uso não comercial. As cartas, os metadados da DHN e o certificado empacotado não estão cobertos pela licença MIT.
+    Sem garantia. Este catálogo não serve para navegar no lugar das cartas oficiais
+    e não se destina a uso comercial.
+    As cartas, os metadados da DHN e o certificado empacotado não estão cobertos pela licença MIT.
     Se a DHN pedir a retirada de algum conteúdo, ele sai do catálogo.
   </p>
   <p>Última verificação: <time datetime="{moment.strftime("%Y-%m-%dT%H:%M:%SZ")}">{html.escape(stamp)}</time>.</p>
@@ -86,22 +68,14 @@ def render_pages_index(charts: dict, checked_at: datetime) -> str:
     No OpenCPN: Opções → Cartas → Chart Downloader → Add, e cole a URL completa
     <code>https://linuzz.github.io/cartas-raster/BR_RNCProdCat.xml</code>.
   </p>
-  <h2>Cartas no manifesto</h2>
-  <p>SHA-256 e URL de origem de cada carta, como estão em <code>data/manifest.json</code>.</p>
-  <table>
-    <thead><tr><th>Carta</th><th>SHA-256</th><th>Origem</th></tr></thead>
-    <tbody>
-{body}
-    </tbody>
-  </table>
 </body>
 </html>
 """
 
 
-def write_pages_index(path, charts: dict, checked_at: datetime) -> None:
+def write_pages_index(path, checked_at: datetime) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_pages_index(charts, checked_at), encoding="utf-8")
+    path.write_text(render_pages_index(checked_at), encoding="utf-8")
 
 
 def render_catalog(entries: list[dict], *, generated_at: datetime, repository: str) -> str:

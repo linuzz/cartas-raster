@@ -16,8 +16,10 @@ RELEASE_TAG = "cartas"
 RELEASE_TITLE = "Cartas raster DHN"
 RELEASE_NOTES = (
     "Catalogação não oficial das cartas raster da DHN para o Chart Downloader do OpenCPN. "
+    "Projeto amador, feito por uma pessoa, apenas para uso acadêmico. "
+    "Não se destina a uso comercial nem substitui as cartas oficiais para navegação. "
     "Fonte oficial: https://www.marinha.mil.br/chm (NORMAM-511/DHN). "
-    "Uso não comercial. As cartas e os metadados da DHN não estão cobertos pela licença MIT. "
+    "As cartas e os metadados da DHN não estão cobertos pela licença MIT. "
     "Os direitos permanecem com os respectivos titulares."
 )
 
