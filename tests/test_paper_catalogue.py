@@ -10,6 +10,7 @@ from cartas_raster.paper_catalogue import (
     catalogue_links,
     edition_gaps,
     newest_catalogue_url,
+    parse_catalogue_hints,
     parse_catalogue_text,
     refresh_paper_catalogue,
 )
@@ -27,6 +28,9 @@ CARTA N°                 TÍTULO                 ESCALA     1ª ED. ÚLT. ED.
 
 def test_parser_keeps_the_last_edition_year_when_the_title_wraps():
     years = parse_catalogue_text(WRAPPED)
+    hints = parse_catalogue_hints(WRAPPED)
+    assert hints["1636"].title.startswith("PORTO DE ANGRA")
+    assert hints["1636"].scale_label == "1:22000"
     assert years["1636"] == 2024
     assert years["1620"] == 2022
     assert years["1637"] == 1980
@@ -65,10 +69,10 @@ def test_unavailable_pdf_does_not_raise(tmp_path: Path):
         def head(self, url):
             raise TimeoutError("sem resposta")
 
-    years, warning = refresh_paper_catalogue(Broken(), "https://assets.marinha.mil.br/chm/cat.pdf", tmp_path / "cache.json")
-    assert years == {}
-    assert warning
-    assert "indisponível" in warning
+    paper = refresh_paper_catalogue(Broken(), "https://assets.marinha.mil.br/chm/cat.pdf", tmp_path / "cache.json")
+    assert paper.years == {}
+    assert paper.warning
+    assert "indisponível" in paper.warning
 
 
 def test_glued_geonetwork_host_is_rewritten_without_double_encoding():

@@ -159,15 +159,15 @@ def test_pdf_timeout_skips_the_hint(monkeypatch, tmp_path: Path):
         def get(self, url):
             return type("G", (), {"status": 200, "headers": {}, "body": b"%PDF"})()
 
-    years, warning = refresh_paper_catalogue(
+    paper = refresh_paper_catalogue(
         Transport(),
         "https://assets.marinha.mil.br/chm/cat.pdf",
         tmp_path / "cache.json",
     )
-    assert years == {}
-    assert warning
-    assert "indisponível" in warning
-    assert "120" in warning
+    assert paper.years == {}
+    assert paper.warning
+    assert "indisponível" in paper.warning
+    assert "120" in paper.warning
 
 
 def test_summary_warns_without_removing(tmp_path: Path, monkeypatch):

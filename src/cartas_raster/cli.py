@@ -14,7 +14,14 @@ from pathlib import Path
 
 from cartas_raster.catalog import asset_name, write_pages_index
 from cartas_raster.chartdldr import assert_plugin_compatible
-from cartas_raster.dhn import DhnCatalog, RASTER_BASE, extra_suffix_names, variant_stem
+from cartas_raster.dhn import (
+    DhnCatalog,
+    PAPER_ONLY_MISSING,
+    RASTER_BASE,
+    extra_suffix_names,
+    paper_only_records,
+    variant_stem,
+)
 from cartas_raster.edition import (
     EditionView,
     bsb_number_matches,
@@ -140,14 +147,18 @@ def run_update(args) -> int:
         f"{len(discovery.unresolved)} sem arquivo; "
         f"{discovery.head_requests} HEADs de variantes."
     )
-    ordered = _prioritize_by_change_date(discovery.charts, manifest)
-    paper_years, paper_warning = refresh_paper_catalogue(
+    paper = refresh_paper_catalogue(
         catalog.transport, discovery.catalogue_pdf_url, cache_path(root)
     )
+    paper_years = paper.years
+    paper_warning = paper.warning
     if paper_warning:
         print(f"AVISO: {paper_warning}", flush=True)
+        print("Cartas só do catálogo em papel não foram procuradas.", flush=True)
     else:
         print(f"Catálogo em papel: {len(paper_years)} cartas em {discovery.catalogue_pdf_url}.", flush=True)
+    paper_found, paper_missing = extend_with_paper_catalogue(catalog, discovery, paper)
+    ordered = _prioritize_by_change_date(discovery.charts, manifest)
     download_dir = args.download_dir or (root / "run" / "downloads")
     variant_cache = load_variant_cache(root)
     nu_warnings: list[str] = []
@@ -191,6 +202,8 @@ def run_update(args) -> int:
         absent=absent,
         transient=transient,
         nu_warnings=nu_warnings,
+        paper_found=paper_found,
+        paper_missing=paper_missing,
     )
     now = datetime.now(timezone.utc).replace(microsecond=0)
     unresolved = list(discovery.unresolved)
@@ -367,6 +380,31 @@ def _pages_checked_at(root: Path) -> datetime:
         except ValueError:
             pass
     return datetime.now(timezone.utc)
+
+
+def extend_with_paper_catalogue(catalog: DhnCatalog, discovery, paper) -> tuple[list[str], list[str]]:
+    """Add ZIP candidates the paper catalogue lists and the index does not.
+
+    A warning means the PDF was not read this run: return without changing
+    ``discovery``. A number with no ZIP is unresolved, not an error.
+    """
+    if paper.warning or not paper.hints:
+        return [], []
+    known = {group.record.chart_id for group in discovery.charts}
+    known.update(item.chart_id for item in discovery.unresolved if item.chart_id and item.chart_id != "?")
+    records = paper_only_records(paper.hints, known)
+    if not records:
+        return [], []
+    print(f"Procurando {len(records)} cartas do papel que não estão no índice…", flush=True)
+    charts, unresolved, heads = catalog._resolve(records, missing_reason=PAPER_ONLY_MISSING)
+    discovery.head_requests += heads
+    discovery.charts.extend(charts)
+    discovery.unresolved.extend(unresolved)
+    for group in charts:
+        print(f"Carta {group.record.chart_id} descoberta pelo catálogo em papel.", flush=True)
+    found = [group.record.chart_id for group in charts]
+    missing = [item.chart_id for item in unresolved if item.reason == PAPER_ONLY_MISSING]
+    return found, missing
 
 
 def delete_orphans(args) -> int:
@@ -592,6 +630,8 @@ def _write_step_summary(
     absent: list[str] | None = None,
     transient: list | None = None,
     nu_warnings: list[str] | None = None,
+    paper_found: list[str] | None = None,
+    paper_missing: list[str] | None = None,
 ) -> None:
     lines = ["## Catálogo em papel da DHN", ""]
     if not compared:
@@ -630,6 +670,19 @@ def _write_step_summary(
         lines.extend(f"- {item}" for item in nu_warnings[:40])
         if len(nu_warnings) > 40:
             lines.append(f"- … e mais {len(nu_warnings) - 40}.")
+    lines.extend(["", "## Cartas descobertas pelo catálogo em papel", ""])
+    if warning:
+        lines.append("Busca não realizada: o PDF não pôde ser lido. Nenhuma carta foi acrescentada nem removida.")
+    else:
+        found = paper_found or []
+        missing = paper_missing or []
+        lines.append(
+            f"{len(found)} com ZIP raster; {len(missing)} sem ZIP. "
+            "A falta de ZIP não é erro e não remove carta."
+        )
+        lines.extend(f"- {chart_id}" for chart_id in found[:40])
+        if len(found) > 40:
+            lines.append(f"- … e mais {len(found) - 40}.")
     if transient:
         lines.extend(["", "## Erros temporários na DHN", ""])
         lines.append("A versão já publicada foi mantida.")

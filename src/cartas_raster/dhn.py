@@ -61,6 +61,8 @@ class TransientSource(Exception):
 
 
 TRANSIENT_HTTP = {403, 429, 500, 502, 503, 504}
+PAPER_ONLY_MISSING = "no catálogo em papel, sem ZIP raster"
+_PAPER_ID = re.compile(r"^\d{1,6}[A-Z]{0,6}$")
 
 
 @dataclass
@@ -189,10 +191,36 @@ def extra_suffix_names(stem: str, found_names: list[str], extra: int = 2) -> lis
     return [f"{stem}_{start + offset}.zip" for offset in range(extra)]
 
 
+def paper_only_records(hints: dict, known: set[str]) -> list[IndexRecord]:
+    """Index rows for paper-catalogue numbers the GeoNetwork index does not have."""
+    records: list[IndexRecord] = []
+    for number in sorted(hints):
+        if number in known or not _PAPER_ID.fullmatch(str(number)):
+            continue
+        hint = hints[number]
+        title = hint.title or f"Carta {number}"
+        records.append(
+            IndexRecord(
+                chart_id=str(number),
+                token=str(number),
+                name=title,
+                scale=scale_denominator(hint.scale_label),
+                scale_label=hint.scale_label,
+                title=title,
+                uuid=f"paper-{number}",
+                status="paper",
+                revision_date=None,
+                change_date=None,
+                page_url=None,
+            )
+        )
+    return records
+
+
 def scale_denominator(scale_label: str | None) -> int | None:
     if not scale_label:
         return None
-    digits = scale_label.split(":", 1)[-1].replace(".", "")
+    digits = re.sub(r"[\s.]", "", scale_label.split(":", 1)[-1])
     if not digits.isdigit():
         return None
     return int(digits)
@@ -356,7 +384,12 @@ class DhnCatalog:
                 raise SourceLayoutError("A paginação do GeoNetwork não terminou.")
         return collected, int(count or 0)
 
-    def _resolve(self, records: list[IndexRecord]) -> tuple[list[ChartVariants], list[Unresolved], int]:
+    def _resolve(
+        self,
+        records: list[IndexRecord],
+        *,
+        missing_reason: str = "nenhum ZIP encontrado para o número da carta",
+    ) -> tuple[list[ChartVariants], list[Unresolved], int]:
         charts: list[ChartVariants] = []
         unresolved: list[Unresolved] = []
         head_requests = 0
@@ -398,7 +431,7 @@ class DhnCatalog:
                     Unresolved(
                         chart_id=record.chart_id,
                         title=record.title,
-                        reason="nenhum ZIP encontrado para o número da carta",
+                        reason=missing_reason,
                         page_url=record.page_url,
                     )
                 )
