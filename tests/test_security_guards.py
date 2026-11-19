@@ -38,6 +38,16 @@ def _chart_zip(name: str = "3332.KAP", payload: bytes | None = None, *, compress
     return buffer.getvalue()
 
 
+def _zip_with_extra(extra_name: str, payload: bytes = b"extra") -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("1404/", b"")
+        archive.writestr("1404/1404.BSB", b"CHT/NA=ANGRA,NU=1404\r\nCED/SE=2,RE=1,ED=01/01/2018\r\n")
+        archive.writestr("1404/140401.KAP", b"VER/3.07\r\n")
+        archive.writestr(extra_name, payload)
+    return buffer.getvalue()
+
+
 def test_normal_orphan_cleanup_still_allows_a_small_plan_drop():
     charts = {str(index): {"zip_filename": f"BR_{index}.zip"} for index in range(388)}
     release = [f"BR_{index}.zip" for index in range(388)] + [f"BR_old_{index}.zip" for index in range(19)]
@@ -253,6 +263,43 @@ def test_transport_rejects_other_hosts_and_oversized_bodies_without_reading(monk
     monkeypatch.delenv("UNUSED", raising=False)
 
 
+def test_thumbs_db_is_ignored_and_the_zip_is_accepted(capsys):
+    data = _zip_with_extra("1404/Thumbs.db", b"\x00\x00")
+    info = inspect_zip(data)
+    assert info.number == "1404"
+    logged = capsys.readouterr().out
+    assert "AVISO" not in logged
+    assert "Thumbs.db" in logged
+    assert "Extras ignorados" in logged
+
+
+def test_geotiff_sidecar_is_ignored_and_the_zip_is_accepted(capsys):
+    data = _zip_with_extra("21080/21080geotiff.tif", b"II*\x00")
+    info = inspect_zip(data)
+    assert info.number == "1404"
+    logged = capsys.readouterr().out
+    assert "AVISO" not in logged
+    assert "21080geotiff.tif" in logged
+
+
+def test_executable_member_is_rejected():
+    with pytest.raises(NotAChartZip, match="não permitido"):
+        inspect_zip(_zip_with_extra("1404/setup.exe", b"MZ"))
+
+
+def test_symlink_member_is_still_rejected():
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("1404/1404.BSB", b"CHT/NA=A,NU=1404\r\nCED/SE=1,RE=1,ED=01/01/2018\r\n")
+        archive.writestr("1404/140401.KAP", b"VER/3.07\r\n")
+        info = zipfile.ZipInfo("1404/link.kap")
+        info.external_attr = (stat.S_IFLNK | 0o777) << 16
+        info.compress_type = zipfile.ZIP_STORED
+        archive.writestr(info, b"1404/140401.KAP")
+    with pytest.raises(NotAChartZip, match="symlink"):
+        inspect_zip(buffer.getvalue())
+
+
 def test_zip_validation_rejects_unsafe_members_and_keeps_valid_bytes(tmp_path: Path):
     valid = _chart_zip()
     assert inspect_zip(valid).number == "3332"
@@ -281,7 +328,7 @@ def test_zip_validation_rejects_unsafe_members_and_keeps_valid_bytes(tmp_path: P
 
     rejected(_chart_zip("../x.kap"), r"\.\.")
     rejected(_chart_zip("/tmp/x.kap"), "absoluto")
-    rejected(_chart_zip("nota.txt", b"oi"), "extensão")
+    rejected(_zip_with_extra("1404/setup.exe", b"MZ"), "não permitido")
 
     info = zipfile.ZipInfo("link.kap")
     info.external_attr = (stat.S_IFLNK | 0o777) << 16
