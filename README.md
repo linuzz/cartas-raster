@@ -1,8 +1,8 @@
-# Cartas raster da DHN para o OpenCPN
+# Catálogo não oficial das cartas raster da DHN para o OpenCPN
 
-Este repositório mantém as cartas náuticas **raster** (BSB/KAP) publicadas pela
-[Diretoria de Hidrografia e Navegação](https://www.marinha.mil.br/chm) (DHN, Marinha do Brasil)
-num catálogo que o plugin **Chart Downloader** (`chartdldr_pi`) do OpenCPN consegue ler.
+Catalogação não oficial das cartas raster da DHN para o plugin **Chart Downloader**
+(`chartdldr_pi`) do OpenCPN. Este projeto não tem vínculo com a Marinha do Brasil
+nem com a Diretoria de Hidrografia e Navegação.
 
 O pipeline, toda semana:
 
@@ -14,13 +14,17 @@ O pipeline, toda semana:
 
 Os binários das cartas **não entram no Git** (limite de 100 MB por arquivo). Cada carta vira um ZIP na Release `cartas` (limite de 2 GB por asset).
 
-## Direitos autorais
+## Aviso legal
 
-As cartas são da DHN. A DHN informa que as cartas raster gratuitas **não podem ser reproduzidas, compiladas ou derivadas para fins comerciais**, e que o uso comercial depende de autorização, tratada pela EMGEPRON (`chm.cartografia@marinha.mil.br`). Os arquivos GeoTIFF oficiais são só para uso acadêmico e **não** entram neste catálogo.
+Este é um projeto não oficial. Não há vínculo com a Marinha do Brasil nem com a DHN.
 
-Este projeto só republica, para uso não comercial no OpenCPN, o ZIP raster que a própria DHN oferece para download. A carta raster não dispensa a carta de papel atualizada até o último Aviso aos Navegantes.
+Não há garantia de nenhum tipo. O catálogo não serve para navegar no lugar das cartas oficiais. As cartas oficiais são as publicadas pela DHN, conforme a NORMAM-511/DHN. A fonte oficial é o site da DHN: <https://www.marinha.mil.br/chm>.
 
-O código deste repositório (não as cartas) está sob a licença MIT. Veja [LICENSE](LICENSE).
+O uso previsto é não comercial. O código está sob a licença MIT; as cartas, os metadados da DHN e o certificado empacotado não estão cobertos por essa licença. Veja [LICENSE](LICENSE).
+
+Os arquivos GeoTIFF oficiais não entram neste catálogo. Se a DHN pedir a retirada de algum conteúdo, ele sai do catálogo.
+
+A carta raster não dispensa a carta de papel atualizada até o último Aviso aos Navegantes.
 
 ## O que você precisa configurar no GitHub
 
@@ -64,7 +68,7 @@ Mudança de conteúdo vira upload na Release `cartas` e atualização do `data/m
 
 Uma edição que já foi rejeitada no modo `review` (está em `data/rejected.json`) continua de fora até o arquivo na DHN mudar, mesmo depois de voltar para `auto`. Apague a entrada correspondente em `rejected.json` se quiser publicar essa edição mesmo assim.
 
-O manifesto é gravado em `main` a cada 20 cartas enviadas. Se a execução cair no meio, o que já foi para a Release permanece. A execução seguinte não envia de novo um asset cujo SHA-256 na Release (`digest`) já é o do manifesto. O mesmo tamanho com outro conteúdo é enviado outra vez. Se o digest divergir, o workflow baixa de novo o ZIP da DHN, confere o SHA-256 do manifesto e republica.
+O manifesto é gravado em `main` a cada 20 cartas enviadas. Se a execução cair no meio, o que já foi para a Release permanece. A execução seguinte não envia de novo um asset cujo SHA-256 na Release (`digest`) já é o do manifesto. O mesmo tamanho com outro conteúdo é enviado outra vez. Se o digest divergir, o workflow baixa de novo o ZIP da DHN, confere o SHA-256 do manifesto e envia o asset outra vez.
 
 ### `review`
 

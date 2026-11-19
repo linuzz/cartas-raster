@@ -15,9 +15,10 @@ from cartas_raster.review_text import parse_marker
 RELEASE_TAG = "cartas"
 RELEASE_TITLE = "Cartas raster DHN"
 RELEASE_NOTES = (
-    "Cartas náuticas raster (BSB/KAP) publicadas pela Diretoria de Hidrografia e "
-    "Navegação (Marinha do Brasil) e empacotadas para o Chart Downloader do OpenCPN. "
-    "Uso não comercial. Os direitos autorais permanecem com a DHN."
+    "Catalogação não oficial das cartas raster da DHN para o Chart Downloader do OpenCPN. "
+    "Fonte oficial: https://www.marinha.mil.br/chm (NORMAM-511/DHN). "
+    "Uso não comercial. As cartas e os metadados da DHN não estão cobertos pela licença MIT. "
+    "Os direitos permanecem com os respectivos titulares."
 )
 
 

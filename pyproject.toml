@@ -1,7 +1,7 @@
 [project]
 name = "cartas-raster"
 version = "1.0.0"
-description = "Pipeline that publishes DHN raster nautical charts for OpenCPN Chart Downloader."
+description = "Catalogação não oficial das cartas raster da DHN para o Chart Downloader do OpenCPN."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
