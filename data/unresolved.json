@@ -731,18 +731,6 @@
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster-380",
       "reason": "coberta pela carta 920; a planta está no BSB da carta principal",
       "title": "Carta Nautica Raster 1:20.000 – Fundeadouro de São Miguel – Carta 920 PL"
-    },
-    {
-      "chart_id": "?",
-      "page_url": null,
-      "reason": "falha ao ler o ZIP",
-      "title": "1404: extensão não permitida no ZIP: 1404/Thumbs.db"
-    },
-    {
-      "chart_id": "?",
-      "page_url": null,
-      "reason": "falha ao ler o ZIP",
-      "title": "21080: extensão não permitida no ZIP: 21080/21080geotiff.tif"
     }
   ],
   "version": 1
