@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from cartas_raster.dhn import probe_variant_files
 from cartas_raster.edition import (
     EditionView,
+    bsb_number_matches,
     choose_newest,
     is_newer,
     orphan_asset_names,
@@ -41,6 +42,22 @@ def test_same_edition_keeps_the_file_with_the_newer_notice():
     older_file = _view(3, "07/31/2024")
     assert is_newer(current, older_file)
     assert not is_newer(older_file, current)
+
+
+def test_international_suffix_is_not_a_number_mismatch():
+    from cartas_raster.cli import _note_bsb_number
+
+    quiet: list[str] = []
+    _note_bsb_number(quiet, "23600", "23600(INT2129)")
+    _note_bsb_number(quiet, "23600", "23600 (INT 2129)")
+    _note_bsb_number(quiet, "23600", "023600")
+    assert quiet == []
+    assert bsb_number_matches("23600", "23600(INT2129)") is True
+
+    warned: list[str] = []
+    _note_bsb_number(warned, "23600", "23601(INT2129)")
+    assert warned == ["23600 (BSB NU=23601(INT2129))"]
+    assert bsb_number_matches("3332", "333200") is False
 
 
 def test_notice_date_breaks_a_tie_inside_the_same_notice_number():
