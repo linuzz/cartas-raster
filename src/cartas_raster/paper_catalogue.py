@@ -18,8 +18,12 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from cartas_raster.store import CATALOGUE_PDF_CACHE
 
-_ROW = re.compile(r"^\s*(?P<number>\d{1,6}[A-Z]{0,6})\s+(?P<rest>.+)$")
-_SCALE = re.compile(r"1:\d")
+_ROW = re.compile(r"^\s*(?P<digits>\d{1,6})(?P<glued>[A-Z]{0,6})[ \t]+(?P<rest>.+)$")
+# A suffix printed as "4101 B" sits in the number column: one letter, then the
+# title column (two or more spaces). "1234 A BARRA" keeps a single space, so
+# "A" stays the first word of the title.
+_SPACED_SUFFIX = re.compile(r"^(?P<letter>[A-Z])[ \t]{2,}(?P<rest>\S.*)$")
+_SCALE = re.compile(r"1:\s*\d")
 _YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
 _PATH_DATE = re.compile(r"/(\d{4})-(\d{2})/")
 _REVISION = re.compile(r"rev(\d+)", re.IGNORECASE)
@@ -124,14 +128,15 @@ def parse_catalogue_hints(text: str) -> dict[str, PaperHint]:
     """Same rows as :func:`parse_catalogue_text`, plus the first-line title and scale."""
     found: dict[str, PaperHint] = {}
     for line in text.splitlines():
-        match = _ROW.match(line)
-        if not match or not _SCALE.search(match.group("rest")):
+        split = _split_catalogue_row(line)
+        if split is None:
             continue
-        rest = match.group("rest")
+        number, rest = split
+        if not _SCALE.search(rest):
+            continue
         years = [int(year) for year in _YEAR.findall(rest)]
         if not years:
             continue
-        number = match.group("number")
         year = years[-1]
         previous = found.get(number)
         if previous is not None and year <= previous.year:
@@ -141,6 +146,26 @@ def parse_catalogue_hints(text: str) -> dict[str, PaperHint]:
         scale_label = _compact_scale(rest[scale_at.start() :], years)
         found[number] = PaperHint(year=year, title=title or f"Carta {number}", scale_label=scale_label)
     return found
+
+
+def _split_catalogue_row(line: str) -> tuple[str, str] | None:
+    """Return ``(chart number, remainder)`` for one catalogue row.
+
+    ``4023A`` is already glued. ``4101 B`` is the same kind of number with the
+    letter in the next layout column. A title that starts with ``A`` is not a
+    suffix: the word that follows it is only one space away.
+    """
+    match = _ROW.match(line)
+    if not match:
+        return None
+    number = match.group("digits") + match.group("glued")
+    rest = match.group("rest")
+    if not match.group("glued"):
+        spaced = _SPACED_SUFFIX.match(rest)
+        if spaced:
+            number += spaced.group("letter")
+            rest = spaced.group("rest")
+    return number, rest
 
 
 def _compact_scale(text: str, years: list[int]) -> str | None:

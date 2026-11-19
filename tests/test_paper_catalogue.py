@@ -1,5 +1,6 @@
 """The paper catalogue is parsed from pdftotext -layout and never blocks a chart."""
 
+import json
 from pathlib import Path
 
 from urllib.parse import urlsplit
@@ -37,6 +38,49 @@ def test_parser_keeps_the_last_edition_year_when_the_title_wraps():
     assert years["4023A"] == 2025
     assert "PROXIMIDADES" not in years
     assert "GRANDE" not in years
+
+
+def test_spaced_letter_is_part_of_the_chart_number():
+    text = """
+     4020    DA ILHA DO ITUQUI A ARAPIXUMA       1:100 000    2024
+    4020 A   PORTO DE SANTARÉM                    1:30 000    2022
+    4032 A   PORTO DE MANAUS                     1:30 000     2016
+   4101 A    DE MACAPÁ À I. MANGABAL             1:100 000    1967    2012
+   4101 B    DA I. MANGABAL À I. DO COMANDAÍ     1:100 000    1967    2012
+    4381 A   DE SANTARÉM A SURUCUÁ                   1:100 063    1984
+"""
+    hints = parse_catalogue_hints(text)
+    assert set(hints) == {"4020", "4020A", "4032A", "4101A", "4101B", "4381A"}
+    assert "4101" not in hints
+    assert hints["4101B"].title.startswith("DA I. MANGABAL")
+    assert hints["4101B"].year == 2012
+    assert hints["4020"].year == 2024
+    assert hints["4020A"].year == 2022
+    manifest = json.loads((Path(__file__).resolve().parents[1] / "data" / "manifest.json").read_text())
+    for chart_id in ("4020A", "4032A", "4101A", "4381A"):
+        assert chart_id in manifest["charts"]
+
+
+def test_a_word_that_starts_the_title_is_not_a_suffix():
+    hints = parse_catalogue_hints("  1234 A BARRA DO RIO                  1:25 000    2019\n")
+    assert list(hints) == ["1234"]
+    assert hints["1234"].title.startswith("A BARRA")
+    assert hints["1234"].year == 2019
+
+
+def test_scale_may_have_a_space_after_the_colon():
+    text = """
+     811      PORTO DE NATAL                      1: 8 500    2024
+    3402   DA BOCA DA ANTA À VOLTA DA PRAINHA   1: 10 000    2011
+   3420    DO ESTIRÃO DA TAQUAREIRA À VOLTA     1: 10 000    2011    2019
+"""
+    hints = parse_catalogue_hints(text)
+    assert hints["811"].title.startswith("PORTO DE NATAL")
+    assert hints["811"].year == 2024
+    assert hints["811"].scale_label == "1:8500"
+    assert hints["3402"].scale_label == "1:10000"
+    assert hints["3402"].year == 2011
+    assert hints["3420"].year == 2019
 
 
 def test_gap_report_keeps_the_older_zip_visible():
