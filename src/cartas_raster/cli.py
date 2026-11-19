@@ -347,7 +347,7 @@ def render_pages(args) -> int:
     manifest = load_manifest(root)
     checked = _pages_checked_at(root)
     write_catalog(root / CATALOG_PATH, manifest["charts"], args.repository, checked)
-    write_pages_index(root / "docs" / "index.html", manifest["charts"], checked)
+    write_pages_index(root / "docs" / "index.html", checked)
     print(
         f"Página do catálogo gerada com {len(manifest.get('charts', {}))} cartas, "
         "só a partir do manifesto local.",

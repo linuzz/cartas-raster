@@ -43,6 +43,8 @@ def test_render_pages_does_not_contact_the_dhn(tmp_path: Path, monkeypatch):
     assert "assets.marinha.mil.br" not in xml
     assert "2026-11-19 12:23:49 UTC" in page
     assert "BR_RNCProdCat.xml" in page
+    assert "Cartas no manifesto" not in page
+    assert "ab" * 32 not in page
 
     workflow = Path(__file__).resolve().parents[1].joinpath(".github/workflows/pages.yml").read_text(encoding="utf-8")
     assert "cartas-raster-publish" in workflow
