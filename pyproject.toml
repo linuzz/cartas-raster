@@ -13,7 +13,7 @@ dev = ["pytest==9.2.0"]
 cartas-raster = "cartas_raster.cli:main"
 
 [build-system]
-requires = ["setuptools==75.8.2"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
