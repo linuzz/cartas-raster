@@ -2,11 +2,11 @@
 <RncProductCatalog>
   <header>
     <title>Cartas Raster DHN — catálogo não oficial (linuzz/cartas-raster)</title>
-    <date_created>2026-11-18</date_created>
-    <time_created>20:31:38</time_created>
-    <date_valid>2026-11-18</date_valid>
-    <time_valid>20:31:38</time_valid>
-    <dt_valid>2026-11-18T20:31:38Z</dt_valid>
+    <date_created>2026-11-19</date_created>
+    <time_created>15:05:57</time_created>
+    <date_valid>2026-11-19</date_valid>
+    <time_valid>15:05:57</time_valid>
+    <dt_valid>2026-11-19T15:05:57Z</dt_valid>
     <ref_spec>Rnc Product Catalog</ref_spec>
     <ref_spec_vers>1.0</ref_spec_vers>
     <s62AgencyCode>83</s62AgencyCode>
@@ -606,6 +606,21 @@
     <target_filename>1512_6.zip</target_filename>
   </chart>
   <chart>
+    <number>1513</number>
+    <title>TERMINAIS DA BAIA DE GUANABARA (1:15000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2025</ntm_edition>
+    <source_date>07/27/2009</source_date>
+    <ntm_date>12/10/2025</ntm_date>
+    <ntm_edition_last_correction>2025-185</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_1513.zip</zipfile_location>
+    <zipfile_datetime>20251210_174603</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-12-10T17:46:03Z</zipfile_datetime_iso8601>
+    <zipfile_size>1203833</zipfile_size>
+    <target_filename>1513.zip</target_filename>
+  </chart>
+  <chart>
     <number>1515</number>
     <title>Baía de Guanabara - Ilha do Mocanguê e Proximidades (1:8000)</title>
     <source_edition>3</source_edition>
@@ -664,6 +679,36 @@
     <zipfile_datetime_iso8601>2026-01-27T13:56:19Z</zipfile_datetime_iso8601>
     <zipfile_size>1174811</zipfile_size>
     <target_filename>1623_2.zip</target_filename>
+  </chart>
+  <chart>
+    <number>1624</number>
+    <title>Terminal Maritimo da Ilha Guaiba (1:22000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2025</ntm_edition>
+    <source_date>12/31/2020</source_date>
+    <ntm_date>11/07/2025</ntm_date>
+    <ntm_edition_last_correction>2025-171</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_1624.zip</zipfile_location>
+    <zipfile_datetime>20251107_170707</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-11-07T17:07:07Z</zipfile_datetime_iso8601>
+    <zipfile_size>807599</zipfile_size>
+    <target_filename>1624_1.zip</target_filename>
+  </chart>
+  <chart>
+    <number>1625</number>
+    <title>Enseadas da Ilha Grande (1:22000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2024</ntm_edition>
+    <source_date>08/31/2021</source_date>
+    <ntm_date>12/05/2024</ntm_date>
+    <ntm_edition_last_correction>2024-306</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_1625.zip</zipfile_location>
+    <zipfile_datetime>20250416_132952</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-04-16T13:29:52Z</zipfile_datetime_iso8601>
+    <zipfile_size>716306</zipfile_size>
+    <target_filename>1625_0.zip</target_filename>
   </chart>
   <chart>
     <number>1631</number>
@@ -1266,6 +1311,21 @@
     <zipfile_datetime_iso8601>2024-12-02T13:40:24Z</zipfile_datetime_iso8601>
     <zipfile_size>1052098</zipfile_size>
     <target_filename>21030.zip</target_filename>
+  </chart>
+  <chart>
+    <number>2104</number>
+    <title>CANAL SÃO GONÇALO DA BARRA A PELOTAS (1:15000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <ntm_edition>2024</ntm_edition>
+    <source_date>10/20/1963</source_date>
+    <ntm_date>07/11/2025</ntm_date>
+    <ntm_edition_last_correction>2024-303</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_2104.zip</zipfile_location>
+    <zipfile_datetime>20250711_180307</zipfile_datetime>
+    <zipfile_datetime_iso8601>2025-07-11T18:03:07Z</zipfile_datetime_iso8601>
+    <zipfile_size>780737</zipfile_size>
+    <target_filename>2104_0.zip</target_filename>
   </chart>
   <chart>
     <number>21040</number>
@@ -4128,6 +4188,18 @@
     <target_filename>3441_1.zip</target_filename>
   </chart>
   <chart>
+    <number>4011</number>
+    <title>De Macapá à Ilha Salvador (1:100000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>08/29/2024</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_4011.zip</zipfile_location>
+    <zipfile_datetime>20241202_134212</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:12Z</zipfile_datetime_iso8601>
+    <zipfile_size>851757</zipfile_size>
+    <target_filename>4011.zip</target_filename>
+  </chart>
+  <chart>
     <number>4016</number>
     <title>De Almeirim à Ilha do Paranaquara (1:100000)</title>
     <source_edition>1</source_edition>
@@ -4150,6 +4222,45 @@
     <zipfile_datetime_iso8601>2025-10-21T17:01:51Z</zipfile_datetime_iso8601>
     <zipfile_size>262497</zipfile_size>
     <target_filename>4017.zip</target_filename>
+  </chart>
+  <chart>
+    <number>4018</number>
+    <title>DE PRAINHA A MONTE ALEGRE (1:100000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>08/30/2024</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_4018.zip</zipfile_location>
+    <zipfile_datetime>20241202_134202</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:02Z</zipfile_datetime_iso8601>
+    <zipfile_size>327346</zipfile_size>
+    <target_filename>4018.zip</target_filename>
+  </chart>
+  <chart>
+    <number>4019</number>
+    <title>De Monte Alegre a Ilha do Ituqui (1:100000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>1</raster_edition>
+    <source_date>08/30/2024</source_date>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_4019.zip</zipfile_location>
+    <zipfile_datetime>20241202_134202</zipfile_datetime>
+    <zipfile_datetime_iso8601>2024-12-02T13:42:02Z</zipfile_datetime_iso8601>
+    <zipfile_size>414328</zipfile_size>
+    <target_filename>4019.zip</target_filename>
+  </chart>
+  <chart>
+    <number>4020</number>
+    <title>Rio Amazonas – Da Ilha do Ituqui a Arapixuna (1:100000)</title>
+    <source_edition>1</source_edition>
+    <raster_edition>4</raster_edition>
+    <ntm_edition>2026</ntm_edition>
+    <source_date>12/09/2023</source_date>
+    <ntm_date>07/29/2026</ntm_date>
+    <ntm_edition_last_correction>2026-65</ntm_edition_last_correction>
+    <zipfile_location>https://github.com/linuzz/cartas-raster/releases/download/cartas/BR_4020.zip</zipfile_location>
+    <zipfile_datetime>20260729_170416</zipfile_datetime>
+    <zipfile_datetime_iso8601>2026-07-29T17:04:16Z</zipfile_datetime_iso8601>
+    <zipfile_size>464162</zipfile_size>
+    <target_filename>4020_1.zip</target_filename>
   </chart>
   <chart>
     <number>4020A</number>

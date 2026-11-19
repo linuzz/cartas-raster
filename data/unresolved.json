@@ -277,6 +277,12 @@
       "title": "Carta Nautica Raster 1:10.000 – Do Posto Agrícola a Cáceres – Carta 3442"
     },
     {
+      "chart_id": "3931",
+      "page_url": null,
+      "reason": "no catálogo em papel, sem ZIP raster",
+      "title": "APPROACHES TO WALVIS BAY (NAMÍBIA)"
+    },
+    {
       "chart_id": "4016PL",
       "page_url": "https://www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/de-almeirim-ilha-do-paranaquara",
       "reason": "coberta pela carta 4016; a planta está no BSB da carta principal",

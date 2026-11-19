@@ -147,20 +147,44 @@
       "zip_year": 2010
     },
     {
+      "catalogue_year": 2023,
+      "chart_id": "3435",
+      "source_date": "11/30/2011",
+      "source_edition": 2,
+      "zip_name": "3435_0.zip",
+      "zip_year": 2011
+    },
+    {
+      "catalogue_year": 2016,
+      "chart_id": "3439",
+      "source_date": "10/30/2010",
+      "source_edition": 2,
+      "zip_name": "3439.zip",
+      "zip_year": 2010
+    },
+    {
+      "catalogue_year": 2016,
+      "chart_id": "3440",
+      "source_date": "10/30/2010",
+      "source_edition": 2,
+      "zip_name": "3440.zip",
+      "zip_year": 2010
+    },
+    {
+      "catalogue_year": 2024,
+      "chart_id": "4020",
+      "source_date": "12/09/2023",
+      "source_edition": 1,
+      "zip_name": "4020_1.zip",
+      "zip_year": 2023
+    },
+    {
       "catalogue_year": 2018,
       "chart_id": "4022",
       "source_date": "11/08/2017",
       "source_edition": 1,
       "zip_name": "4022_0.zip",
       "zip_year": 2017
-    },
-    {
-      "catalogue_year": 2016,
-      "chart_id": "4032",
-      "source_date": "09/30/2015",
-      "source_edition": 1,
-      "zip_name": "4032_0.zip",
-      "zip_year": 2015
     },
     {
       "catalogue_year": 2014,
