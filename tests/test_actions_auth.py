@@ -35,6 +35,34 @@ def _uses_gh(body: str) -> bool:
     return "cartas_raster.cli" in body or "gh " in body
 
 
+def _run_scripts(text: str) -> list[str]:
+    import re
+
+    scripts: list[str] = []
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines):
+        match = re.match(r"^(\s+)run:\s*(\|)?\s*(.*)$", lines[index])
+        if not match:
+            index += 1
+            continue
+        indent = len(match.group(1))
+        if match.group(2):
+            index += 1
+            body: list[str] = []
+            while index < len(lines):
+                line = lines[index]
+                if line.strip() and (len(line) - len(line.lstrip())) <= indent:
+                    break
+                body.append(line)
+                index += 1
+            scripts.append("\n".join(body))
+        else:
+            scripts.append(match.group(3))
+            index += 1
+    return scripts
+
+
 def test_jobs_that_call_gh_set_the_token_and_can_write():
     for workflow in ("update.yml", "review.yml"):
         jobs = _jobs((ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8"))
@@ -51,8 +79,19 @@ def test_deploy_jobs_do_not_need_gh():
         jobs = _jobs((ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8"))
         assert "deploy" in jobs
         assert not _uses_gh(jobs["deploy"])
-        assert "pages: write" in (ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8")
-        assert "id-token: write" in (ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8")
+        assert "pages: write" in jobs["deploy"]
+        assert "id-token: write" in jobs["deploy"]
+        for name, body in jobs.items():
+            if name == "deploy":
+                continue
+            assert "id-token: write" not in body, f"{workflow} job {name} não precisa de id-token"
+
+
+def test_run_scripts_do_not_interpolate_expressions():
+    for name in ("update.yml", "review.yml", "ci.yml"):
+        text = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+        for script in _run_scripts(text):
+            assert "${{" not in script, name
 
 
 def test_actions_without_gh_token_fails(monkeypatch):

@@ -34,6 +34,15 @@ from cartas_raster.github_io import GitHub, SubprocessRunner, commit_paths, push
 from cartas_raster.http_client import UrllibTransport
 from cartas_raster.models import PreparedChart, RemoteFile, Unresolved
 from cartas_raster.pipeline import ChartPackageError, manifest_entry, package_chart, write_catalog
+from cartas_raster.proposal import (
+    confined_zip_path,
+    materialize_verified_zip,
+    require_chart_id,
+    require_known_charts,
+    require_raster_url,
+    require_sha256,
+    require_zip_name,
+)
 from cartas_raster.plan import select_for_publish, select_for_review
 from cartas_raster.review_text import proposal_document, pull_request_body, pull_request_title
 from cartas_raster.store import (
@@ -158,39 +167,52 @@ def publish_merged(args) -> int:
     root: Path = args.root.resolve()
     document = json.loads(args.proposal.read_text(encoding="utf-8"))
     proposed = document["proposed"]
-    chart_id = proposed["chart_id"]
+    chart_id = require_chart_id(str(proposed["chart_id"]))
+    zip_name = require_zip_name(str(proposed.get("zip_name") or ""))
+    source_url = require_raster_url(str(proposed["source_url"]), zip_name)
+    expected_sha = require_sha256(str(proposed["sha256"]))
+    if proposed.get("zip_filename") != asset_name(chart_id):
+        raise ChartPackageError(f"{chart_id}: zip_filename deve ser {asset_name(chart_id)}")
+    manifest = load_manifest(root)
+    retire_ids = require_known_charts(list(document.get("retire_chart_ids") or []), manifest["charts"])
+    previous_chart_count = len(manifest["charts"])
     print(f"Publicando carta {chart_id} a partir de {args.proposal}…")
+    if not args.dry_run:
+        projected = {key: value for key, value in manifest["charts"].items()}
+        projected[chart_id] = proposed
+        for retired_id in retire_ids:
+            projected.pop(retired_id, None)
+        _preflight_orphan_cleanup(
+            GitHub(SubprocessRunner(), root, args.repository), projected, previous_chart_count
+        )
     transport = UrllibTransport()
-    result = transport.get(proposed["source_url"])
+    result = transport.get(source_url)
     if result.status != 200:
         raise ChartPackageError(f"{chart_id}: a DHN respondeu HTTP {result.status} ao republicar")
     download_dir = root / "run" / "downloads"
-    download_dir.mkdir(parents=True, exist_ok=True)
-    raw_path = download_dir / proposed.get("zip_name", f"{chart_id}.zip")
-    raw_path.write_bytes(result.body)
+    raw_path = materialize_verified_zip(download_dir, zip_name, result.body, expected_sha)
     remote = RemoteFile(
         chart_id=chart_id,
         record=_record_from_entry(proposed),
-        source_url=proposed["source_url"],
-        zip_name=proposed.get("zip_name") or f"{chart_id}.zip",
-        content_length=raw_path.stat().st_size,
+        source_url=source_url,
+        zip_name=zip_name,
+        content_length=len(result.body),
         last_modified=proposed.get("last_modified"),
         etag=proposed.get("etag"),
     )
     packaged = package_chart(remote, raw_path)
-    if packaged.sha256 != proposed["sha256"]:
+    if packaged.sha256 != expected_sha:
         raise ChartPackageError(
             f"{chart_id}: o ZIP na DHN mudou desde a aprovação "
-            f"(sha256 {packaged.sha256}, proposta {proposed['sha256']}). "
+            f"(sha256 {packaged.sha256}, proposta {expected_sha}). "
             "Nada foi publicado; rode o workflow de atualização para abrir uma proposta nova."
         )
     if args.dry_run:
         print(f"Dry-run: SHA-256 confere para a carta {chart_id}. Nenhum upload nem commit.")
         return 0
-    asset = download_dir / asset_name(chart_id)
+    asset = confined_zip_path(download_dir, asset_name(chart_id))
     shutil.copyfile(raw_path, asset)
     GitHub(SubprocessRunner(), root, args.repository).upload_asset(asset)
-    manifest = load_manifest(root)
     manifest["charts"][chart_id] = proposed
     manifest["updated_at"] = datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
     catalog_path = root / CATALOG_PATH
@@ -200,7 +222,7 @@ def publish_merged(args) -> int:
         args.repository,
         datetime.now(timezone.utc),
     )
-    for retired_id in document.get("retire_chart_ids") or []:
+    for retired_id in retire_ids:
         removed = manifest["charts"].pop(retired_id, None)
         if removed:
             print(f"Remove a entrada duplicada da carta {retired_id}.")
@@ -218,7 +240,9 @@ def publish_merged(args) -> int:
     )
     if committed:
         push_head(runner, root, "main")
-    removed = GitHub(runner, root, args.repository).cleanup_orphans(manifest["charts"])
+    removed = GitHub(runner, root, args.repository).cleanup_orphans(
+        manifest["charts"], previous_chart_count=previous_chart_count
+    )
     if removed:
         print(f"Assets órfãos removidos: {', '.join(removed)}")
     print(f"Carta {chart_id} publicada.")
@@ -251,6 +275,23 @@ def reject_closed(args) -> int:
     return 0
 
 
+def _preflight_orphan_cleanup(github: GitHub, charts: dict, previous_chart_count: int) -> None:
+    """Print the deletion list and refuse before any asset is removed."""
+    from cartas_raster.edition import OrphanCleanupRefused, assert_orphan_cleanup_allowed
+
+    try:
+        names = assert_orphan_cleanup_allowed(
+            charts,
+            list(github.release_asset_sizes()),
+            previous_chart_count=previous_chart_count,
+        )
+    except OrphanCleanupRefused as exc:
+        print(f"Limpeza de órfãos recusada: {exc}", flush=True)
+        raise
+    preview = ", ".join(names) if names else "nenhum"
+    print(f"Limpeza de órfãos prevista: {len(names)} asset(s): {preview}.", flush=True)
+
+
 def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved, now, retired: list[str]) -> int:
     accepted, skipped = select_for_publish(content, rejected)
     for chart_id in skipped:
@@ -261,8 +302,16 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
             print(f"Publicaria {entry['chart_id']} ({entry['title']}) edição {_edition(entry)} tamanho {entry['zip_size']}")
         print(f"Dry-run: {len(accepted)} carta(s), sem upload e sem commit.")
         return 0
+    previous_chart_count = len(manifest.get("charts") or {})
     runner = SubprocessRunner()
     _ensure_identity(runner, root)
+    if accepted or retired:
+        projected = {key: value for key, value in manifest["charts"].items() if key not in set(retired)}
+        for chart in accepted:
+            projected[chart.remote.chart_id] = {"zip_filename": asset_name(chart.remote.chart_id)}
+        _preflight_orphan_cleanup(
+            GitHub(runner, root, args.repository), projected, previous_chart_count
+        )
     _apply_header_updates(manifest, header_only)
     for chart_id in retired:
         if manifest["charts"].pop(chart_id, None):
@@ -291,7 +340,7 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
     finally:
         persist()
     if github is not None and (published or retired):
-        github.cleanup_orphans(manifest["charts"])
+        github.cleanup_orphans(manifest["charts"], previous_chart_count=previous_chart_count)
     if failures:
         print(f"{len(published)} carta(s) ficaram no manifesto. Rode de novo para continuar.", flush=True)
         for line in failures:
