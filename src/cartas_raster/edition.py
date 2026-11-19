@@ -269,15 +269,32 @@ def _is_year(number: int) -> bool:
     return 1900 <= number <= 2100
 
 
+_INT_ALIAS = re.compile(r"\s*\(\s*INT\s*\d+\s*\)\s*$", re.IGNORECASE)
+
+
+def _canonical_chart_number(value: str) -> str:
+    """Drop a trailing ``(INT2129)`` and leading zeros. The chart id itself stays."""
+    text = _INT_ALIAS.sub("", str(value).strip()).strip()
+    text = re.sub(r"\s+", "", text)
+    match = re.fullmatch(r"0*(\d+)([A-Za-z]*)", text, flags=re.IGNORECASE)
+    if match:
+        digits = match.group(1).lstrip("0") or "0"
+        return digits + match.group(2).upper()
+    return re.sub(r"[^A-Za-z0-9]", "", text).upper()
+
+
 def bsb_number_matches(chart_id: str, bsb_number: str | None) -> bool:
-    """True when the header has no number or it is the same id. A mismatch only warns."""
+    """True when the header has no number or it is the same id.
+
+    ``23600(INT2129)`` and ``023600`` are the same chart as ``23600``.
+    A different number still does not match; the caller only warns.
+    """
     if bsb_number is None:
         return True
-    left = re.sub(r"[^A-Za-z0-9]", "", str(chart_id)).upper()
-    right = re.sub(r"[^A-Za-z0-9]", "", str(bsb_number)).upper()
+    right = _canonical_chart_number(bsb_number)
     if not right:
         return True
-    return left == right
+    return _canonical_chart_number(chart_id) == right
 
 
 def parse_http_datetime(value: str | None) -> datetime | None:
