@@ -11,20 +11,44 @@ import json
 import re
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from cartas_raster.store import CATALOGUE_PDF_CACHE
 
-_ROW = re.compile(r"^\s*(?P<number>\d{1,6}[A-Z]{0,6})\s+(?P<rest>.+)$")
-_SCALE = re.compile(r"1:\d")
+_ROW = re.compile(r"^\s*(?P<digits>\d{1,6})(?P<glued>[A-Z]{0,6})[ \t]+(?P<rest>.+)$")
+# A suffix printed as "4101 B" sits in the number column: one letter, then the
+# title column (two or more spaces). "1234 A BARRA" keeps a single space, so
+# "A" stays the first word of the title.
+_SPACED_SUFFIX = re.compile(r"^(?P<letter>[A-Z])[ \t]{2,}(?P<rest>\S.*)$")
+_SCALE = re.compile(r"1:\s*\d")
 _YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
 _PATH_DATE = re.compile(r"/(\d{4})-(\d{2})/")
 _REVISION = re.compile(r"rev(\d+)", re.IGNORECASE)
 
 
 SKIPPED_COMPARISON = "Comparação com o catálogo em papel não realizada (PDF indisponível)."
+
+
+@dataclass(frozen=True)
+class PaperHint:
+    year: int
+    title: str
+    scale_label: str | None = None
+
+
+@dataclass(frozen=True)
+class PaperCatalogue:
+    """Years stay the edition hint. Titles and scales only name charts the index missed."""
+
+    hints: dict[str, PaperHint]
+    warning: str | None = None
+
+    @property
+    def years(self) -> dict[str, int]:
+        return {number: hint.year for number, hint in self.hints.items()}
 
 
 def assets_pdf_url(url: str) -> str | None:
@@ -97,19 +121,64 @@ def parse_catalogue_text(text: str) -> dict[str, int]:
     that edition is also the latest. The same number can appear again as a plan;
     the greater year is kept.
     """
-    found: dict[str, int] = {}
+    return {number: hint.year for number, hint in parse_catalogue_hints(text).items()}
+
+
+def parse_catalogue_hints(text: str) -> dict[str, PaperHint]:
+    """Same rows as :func:`parse_catalogue_text`, plus the first-line title and scale."""
+    found: dict[str, PaperHint] = {}
     for line in text.splitlines():
-        match = _ROW.match(line)
-        if not match or not _SCALE.search(match.group("rest")):
+        split = _split_catalogue_row(line)
+        if split is None:
             continue
-        years = [int(year) for year in _YEAR.findall(match.group("rest"))]
+        number, rest = split
+        if not _SCALE.search(rest):
+            continue
+        years = [int(year) for year in _YEAR.findall(rest)]
         if not years:
             continue
-        number = match.group("number")
         year = years[-1]
-        if number not in found or year > found[number]:
-            found[number] = year
+        previous = found.get(number)
+        if previous is not None and year <= previous.year:
+            continue
+        scale_at = _SCALE.search(rest)
+        title = re.sub(r"\s+", " ", rest[: scale_at.start()]).strip(" -")
+        scale_label = _compact_scale(rest[scale_at.start() :], years)
+        found[number] = PaperHint(year=year, title=title or f"Carta {number}", scale_label=scale_label)
     return found
+
+
+def _split_catalogue_row(line: str) -> tuple[str, str] | None:
+    """Return ``(chart number, remainder)`` for one catalogue row.
+
+    ``4023A`` is already glued. ``4101 B`` is the same kind of number with the
+    letter in the next layout column. A title that starts with ``A`` is not a
+    suffix: the word that follows it is only one space away.
+    """
+    match = _ROW.match(line)
+    if not match:
+        return None
+    number = match.group("digits") + match.group("glued")
+    rest = match.group("rest")
+    if not match.group("glued"):
+        spaced = _SPACED_SUFFIX.match(rest)
+        if spaced:
+            number += spaced.group("letter")
+            rest = spaced.group("rest")
+    return number, rest
+
+
+def _compact_scale(text: str, years: list[int]) -> str | None:
+    cutoff = text
+    for year in years:
+        index = text.find(str(year))
+        if index != -1:
+            cutoff = text[:index]
+            break
+    compact = re.sub(r"\s+", "", cutoff)
+    if not compact.startswith("1:"):
+        return None
+    return compact
 
 
 def edition_year(source_date: str | None) -> int | None:
@@ -168,17 +237,20 @@ def load_cached_catalogue(path: Path) -> dict:
     return payload if isinstance(payload, dict) else {}
 
 
-def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tuple[dict[str, int], str | None]:
-    """Return ``(chart_number -> year, warning)``.
+def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> PaperCatalogue:
+    """Return the paper hint. A missing PDF never raises and never removes charts.
 
-    A missing URL, a failed download, or a parser error never raises. The
-    previous cache is reused when the download fails and a cache exists.
+    The previous cache is reused for the edition-year comparison when the
+    download fails and a cache exists. Callers that add charts must ignore the
+    hints when ``warning`` is set, so a failed read changes nothing.
     """
     cached = load_cached_catalogue(cache_path)
-    cached_years = cached.get("charts") if isinstance(cached.get("charts"), dict) else {}
+    cached_hints = _hints_from_cache(cached)
     if not url:
         warning = "Catálogo em PDF não encontrado nos registros do GeoNetwork."
-        return _years(cached_years), warning if not cached_years else warning + " Usando a cópia em cache."
+        if cached_hints:
+            warning += " Usando a cópia em cache."
+        return PaperCatalogue(cached_hints, warning)
     print(f"Consultando catálogo em papel: {url}", flush=True)
     try:
         head = transport.head(url)
@@ -189,9 +261,9 @@ def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tup
             cached.get("url") == url
             and size is not None
             and cached.get("size") == size
-            and cached_years
+            and cached_hints
         ):
-            return _years(cached_years), None
+            return PaperCatalogue(cached_hints, None)
         downloaded = transport.get(url)
         if getattr(downloaded, "status", 0) != 200:
             raise RuntimeError(f"HTTP {getattr(downloaded, 'status', '?')} ao baixar o PDF")
@@ -199,24 +271,44 @@ def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tup
             temporary.write(downloaded.body)
             temporary.flush()
             text = pdf_to_text(Path(temporary.name))
-        years = parse_catalogue_text(text)
-        if not years:
+        hints = parse_catalogue_hints(text)
+        if not hints:
             raise RuntimeError("o PDF não produziu nenhuma carta")
         payload = {
             "url": url,
             "size": size if size is not None else len(downloaded.body),
             "parsed_at": datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "charts": {key: years[key] for key in sorted(years)},
+            "charts": {key: hints[key].year for key in sorted(hints)},
+            "titles": {key: hints[key].title for key in sorted(hints)},
+            "scales": {key: hints[key].scale_label for key in sorted(hints) if hints[key].scale_label},
         }
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        return years, None
+        return PaperCatalogue(hints, None)
     except Exception as exc:
         warning = f"Catálogo em PDF indisponível em {url} ({exc})."
-        if cached_years:
+        if cached_hints:
             warning += " Usando a cópia em cache."
-            return _years(cached_years), warning
-        return {}, warning
+            return PaperCatalogue(cached_hints, warning)
+        return PaperCatalogue({}, warning)
+
+
+def _hints_from_cache(cached: dict) -> dict[str, PaperHint]:
+    years = cached.get("charts") if isinstance(cached.get("charts"), dict) else {}
+    titles = cached.get("titles") if isinstance(cached.get("titles"), dict) else {}
+    scales = cached.get("scales") if isinstance(cached.get("scales"), dict) else {}
+    hints: dict[str, PaperHint] = {}
+    for key, value in years.items():
+        try:
+            year = int(value)
+        except (TypeError, ValueError):
+            continue
+        hints[str(key)] = PaperHint(
+            year=year,
+            title=str(titles.get(key) or f"Carta {key}"),
+            scale_label=str(scales[key]) if scales.get(key) else None,
+        )
+    return hints
 
 
 PDFTOTEXT_TIMEOUT = 120

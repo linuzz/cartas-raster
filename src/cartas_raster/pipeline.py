@@ -52,7 +52,10 @@ def manifest_entry(chart: PreparedChart) -> dict:
     record = chart.remote.record
     info: BsbInfo = chart.bsb
     scale = f"1:{record.scale}" if record.scale else record.scale_label
-    title = record.name
+    name = record.name
+    if record.status == "paper" and info.name:
+        name = info.name.strip()
+    title = name
     if scale:
         title = f"{title} ({scale})"
     return {
@@ -60,7 +63,7 @@ def manifest_entry(chart: PreparedChart) -> dict:
         "number": chart.remote.chart_id,
         "title": title,
         "official_title": record.title,
-        "name": record.name,
+        "name": name,
         "scale": record.scale,
         "metadata_edition": None,
         "source_edition": info.source_edition,
