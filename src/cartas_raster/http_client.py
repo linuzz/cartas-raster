@@ -21,6 +21,8 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -29,7 +31,8 @@ USER_AGENT = (
     "OpenCPN Chart Downloader catalogue)"
 )
 _CERT = Path(__file__).with_name("certs") / "ac-defesa-gr46-ov-tls-ca-2025.pem"
-_RETRY_STATUS = {429, 500, 502, 503, 504}
+_RETRY_STATUS = {403, 429, 500, 502, 503, 504}
+_MAX_RETRY_WAIT = 60.0
 _CHUNK = 64 * 1024
 MAX_DOWNLOAD_BYTES = 2 * 1024 * 1024 * 1024
 ALLOWED_HOSTS = frozenset({"assets.marinha.mil.br", "idem.marinha.mil.br"})
@@ -216,21 +219,25 @@ class UrllibTransport:
                         body = read_bounded(response, self.max_bytes)
                     return response.status, _header_map(response.headers), body, final
             except urllib.error.HTTPError as exc:
-                if exc.code not in _RETRY_STATUS or attempt == attempts:
-                    headers = _header_map(exc.headers) if exc.headers else {}
-                    if method == "HEAD":
-                        payload = b""
-                    else:
-                        payload = read_bounded(exc, self.max_bytes)
-                    return exc.code, headers, payload, url
+                headers = _header_map(exc.headers) if exc.headers else {}
+                if exc.code in _RETRY_STATUS and attempt < attempts:
+                    delay = retry_wait(headers, delay)
+                    time.sleep(delay)
+                    delay = min(_MAX_RETRY_WAIT, max(delay, 1.0) * 2)
+                    continue
+                if method == "HEAD":
+                    payload = b""
+                else:
+                    payload = read_bounded(exc, self.max_bytes)
+                return exc.code, headers, payload, url
             except (RejectedUrl, DownloadTooLarge):
                 raise
             except (urllib.error.URLError, TimeoutError, ssl.SSLError) as exc:
                 last_error = exc
                 if attempt == attempts:
                     raise
-            time.sleep(delay)
-            delay *= 2
+                time.sleep(delay)
+                delay = min(_MAX_RETRY_WAIT, delay * 2)
         raise RuntimeError(f"falha ao acessar {url}: {last_error}")
 
     def _wait(self) -> None:
@@ -254,3 +261,25 @@ def _content_length(headers) -> int | None:
 
 def _header_map(headers) -> dict[str, str]:
     return {key.lower(): value for key, value in headers.items()}
+
+
+def retry_wait(headers: dict | None, fallback: float) -> float:
+    """Seconds to wait. ``Retry-After`` wins, capped so one file cannot stall the run."""
+    raw = None
+    if headers:
+        raw = headers.get("retry-after") or headers.get("Retry-After")
+    if raw is not None:
+        text = str(raw).strip()
+        if text.isdigit():
+            return min(_MAX_RETRY_WAIT, float(text))
+        try:
+            when = parsedate_to_datetime(text)
+        except (TypeError, ValueError, IndexError, OverflowError):
+            when = None
+        if when is not None:
+            if when.tzinfo is None:
+                when = when.replace(tzinfo=timezone.utc)
+            seconds = (when - datetime.now(timezone.utc)).total_seconds()
+            if seconds > 0:
+                return min(_MAX_RETRY_WAIT, seconds)
+    return min(_MAX_RETRY_WAIT, max(fallback, 0.0))

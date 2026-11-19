@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -201,8 +202,12 @@ class GitHub:
             )
         self._release_ready = True
 
-    def release_asset_sizes(self) -> dict[str, int]:
-        """Name → size for assets already on the ``cartas`` release."""
+    def release_assets(self) -> dict[str, dict]:
+        """Name → ``{"size", "sha256"}`` for assets on the ``cartas`` release.
+
+        ``sha256`` comes from the ``digest`` field (``sha256:…``). It is ``None``
+        when the API does not send one, and the caller must not treat that as a match.
+        """
         self.ensure_release()
         view = self.runner.run(
             [
@@ -218,12 +223,20 @@ class GitHub:
             cwd=self.root,
         )
         payload = json.loads(view.stdout or "{}")
-        sizes: dict[str, int] = {}
+        found: dict[str, dict] = {}
         for asset in payload.get("assets") or []:
             name = asset.get("name")
-            if name:
-                sizes[str(name)] = int(asset.get("size") or 0)
-        return sizes
+            if not name:
+                continue
+            found[str(name)] = {
+                "size": int(asset.get("size") or 0),
+                "sha256": asset_sha256(asset.get("digest")),
+            }
+        return found
+
+    def release_asset_sizes(self) -> dict[str, int]:
+        """Name → size for assets already on the ``cartas`` release."""
+        return {name: int(info.get("size") or 0) for name, info in self.release_assets().items()}
 
     def delete_asset(self, name: str) -> None:
         self.runner.run(
@@ -292,6 +305,15 @@ class GitHub:
             ],
             cwd=self.root,
         )
+
+
+def asset_sha256(digest: str | None) -> str | None:
+    if not digest or not isinstance(digest, str):
+        return None
+    hexpart = digest.split(":", 1)[-1].strip().lower()
+    if re.fullmatch(r"[0-9a-f]{64}", hexpart):
+        return hexpart
+    return None
 
 
 def commit_paths(runner: SubprocessRunner, root: Path, paths: list[Path], message: str) -> bool:

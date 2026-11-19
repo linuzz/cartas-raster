@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -15,9 +16,12 @@ from cartas_raster.catalog import asset_name
 from cartas_raster.chartdldr import assert_plugin_compatible
 from cartas_raster.dhn import DhnCatalog, RASTER_BASE, extra_suffix_names, variant_stem
 from cartas_raster.edition import (
+    EditionView,
+    bsb_number_matches,
     choose_newest,
     is_newer,
     manifest_has_same_bytes,
+    parse_http_datetime,
     retire_absorbed,
     view_from_bsb,
     view_from_manifest,
@@ -50,6 +54,8 @@ from cartas_raster.store import (
     EDITION_GAPS_PATH,
     PROPOSALS_DIR,
     UNRESOLVED_PATH,
+    VARIANT_CACHE_PATH,
+    load_variant_cache,
     add_rejection,
     load_manifest,
     load_overrides,
@@ -88,6 +94,10 @@ def main(argv: list[str] | None = None) -> int:
     check = sub.add_parser("check-catalog", help="Valida um catálogo contra o parser do plugin")
     check.add_argument("path", type=Path)
 
+    orphans = sub.add_parser("delete-orphans", help="Remove assets da Release que o manifesto não cita")
+    orphans.add_argument("--root", type=Path, default=Path.cwd())
+    orphans.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY))
+
     args = parser.parse_args(argv)
     try:
         if args.command == "run":
@@ -100,6 +110,8 @@ def main(argv: list[str] | None = None) -> int:
             parsed = assert_plugin_compatible(args.path.read_text(encoding="utf-8"))
             print(f"Catálogo compatível com chartdldr_pi: {len(parsed.charts)} carta(s).")
             return 0
+        if args.command == "delete-orphans":
+            return delete_orphans(args)
     except SourceLayoutError as exc:
         print(f"ERRO DE LAYOUT: {exc}", file=sys.stderr)
         return 2
@@ -131,9 +143,19 @@ def run_update(args) -> int:
     else:
         print(f"Catálogo em papel: {len(paper_years)} cartas em {discovery.catalogue_pdf_url}.", flush=True)
     download_dir = args.download_dir or (root / "run" / "downloads")
+    variant_cache = load_variant_cache(root)
+    nu_warnings: list[str] = []
     prepared, failures, retired = _select_editions(
-        catalog.transport, ordered, manifest, download_dir, paper_years
+        catalog.transport,
+        ordered,
+        manifest,
+        download_dir,
+        paper_years,
+        variant_cache=variant_cache,
+        nu_warnings=nu_warnings,
     )
+    if not args.dry_run:
+        save_json(root / VARIANT_CACHE_PATH, variant_cache)
     attempts = len(failures) + len(prepared)
     if attempts >= 5 and len(failures) / attempts > 0.5:
         raise SourceLayoutError(
@@ -149,7 +171,21 @@ def run_update(args) -> int:
     compared = bool(paper_years)
     gaps = _gaps_for_run(manifest, content, paper_years) if compared else []
     _write_gaps(root, gaps, paper_warning, discovery.catalogue_pdf_url, compared)
-    _write_step_summary(gaps, paper_warning, len(paper_years), compared)
+    indexed = {group.record.chart_id for group in discovery.charts}
+    indexed.update(item.chart_id for item in discovery.unresolved if item.chart_id and item.chart_id != "?")
+    absent = sorted(chart_id for chart_id in manifest.get("charts", {}) if chart_id not in indexed)
+    for chart_id, entry in manifest.get("charts", {}).items():
+        _note_bsb_number(nu_warnings, chart_id, entry.get("bsb_number"))
+    transient = [item for item in discovery.unresolved if str(item.reason).startswith("erro temporário")]
+    _write_step_summary(
+        gaps,
+        paper_warning,
+        len(paper_years),
+        compared,
+        absent=absent,
+        transient=transient,
+        nu_warnings=nu_warnings,
+    )
     now = datetime.now(timezone.utc).replace(microsecond=0)
     unresolved = list(discovery.unresolved)
     for failure in failures:
@@ -214,6 +250,10 @@ def publish_merged(args) -> int:
     shutil.copyfile(raw_path, asset)
     GitHub(SubprocessRunner(), root, args.repository).upload_asset(asset)
     manifest["charts"][chart_id] = proposed
+    for retired_id in retire_ids:
+        removed = manifest["charts"].pop(retired_id, None)
+        if removed:
+            print(f"Remove a entrada duplicada da carta {retired_id}.")
     manifest["updated_at"] = datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
     catalog_path = root / CATALOG_PATH
     write_catalog(
@@ -222,10 +262,6 @@ def publish_merged(args) -> int:
         args.repository,
         datetime.now(timezone.utc),
     )
-    for retired_id in retire_ids:
-        removed = manifest["charts"].pop(retired_id, None)
-        if removed:
-            print(f"Remove a entrada duplicada da carta {retired_id}.")
     save_json(root / "data" / "manifest.json", manifest)
     proposal_path = root / PROPOSALS_DIR / f"{chart_id}.json"
     if proposal_path.exists():
@@ -240,8 +276,10 @@ def publish_merged(args) -> int:
     )
     if committed:
         push_head(runner, root, "main")
-    removed = GitHub(runner, root, args.repository).cleanup_orphans(
-        manifest["charts"], previous_chart_count=previous_chart_count
+    removed = _finish_orphan_cleanup(
+        GitHub(runner, root, args.repository),
+        manifest["charts"],
+        previous_chart_count,
     )
     if removed:
         print(f"Assets órfãos removidos: {', '.join(removed)}")
@@ -292,6 +330,31 @@ def _preflight_orphan_cleanup(github: GitHub, charts: dict, previous_chart_count
     print(f"Limpeza de órfãos prevista: {len(names)} asset(s): {preview}.", flush=True)
 
 
+def delete_orphans(args) -> int:
+    """Remove release assets the committed manifest no longer cites.
+
+    Used after GitHub Pages has published the catalogue that dropped those charts.
+    """
+    root: Path = args.root.resolve()
+    manifest = load_manifest(root)
+    removed = GitHub(SubprocessRunner(), root, args.repository).cleanup_orphans(manifest["charts"])
+    if removed:
+        print(f"Assets órfãos removidos: {', '.join(removed)}")
+    else:
+        print("Nenhum asset órfão.")
+    return 0
+
+
+def _finish_orphan_cleanup(github: GitHub, charts: dict, previous_chart_count: int) -> list[str]:
+    if os.environ.get("DEFER_ASSET_DELETION") == "1":
+        print(
+            "Exclusão de órfãos adiada até o catálogo novo ser publicado no Pages.",
+            flush=True,
+        )
+        return []
+    return github.cleanup_orphans(charts, previous_chart_count=previous_chart_count)
+
+
 def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved, now, retired: list[str]) -> int:
     accepted, skipped = select_for_publish(content, rejected)
     for chart_id in skipped:
@@ -319,6 +382,8 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
     published: list[PreparedChart] = []
     failures: list[str] = []
 
+    removed_charts = bool(retired)
+
     def persist() -> None:
         _persist_publication(
             runner,
@@ -329,18 +394,18 @@ def _apply_auto(args, root, manifest, rejected, content, header_only, unresolved
             unresolved,
             args.repository,
             now,
+            rewrite_catalog=removed_charts or bool(published),
         )
 
-    github = None
+    github = GitHub(runner, root, args.repository)
     try:
-        if accepted or retired:
-            github = GitHub(runner, root, args.repository)
         if accepted:
             failures = upload_new_assets(accepted, manifest, github, published, persist)
     finally:
         persist()
-    if github is not None and (published or retired):
-        github.cleanup_orphans(manifest["charts"], previous_chart_count=previous_chart_count)
+    heal_release_digests(root, manifest, github, UrllibTransport())
+    if published or retired:
+        _finish_orphan_cleanup(github, manifest["charts"], previous_chart_count)
     if failures:
         print(f"{len(published)} carta(s) ficaram no manifesto. Rode de novo para continuar.", flush=True)
         for line in failures:
@@ -371,14 +436,23 @@ def _apply_review(args, root, manifest, rejected, content, header_only, unresolv
         manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         save_json(manifest_path, manifest)
     _ensure_identity(runner, root)
+    cache_file = root / VARIANT_CACHE_PATH
+    review_paths = [manifest_path, unresolved_path]
+    if cache_file.exists():
+        review_paths.append(cache_file)
     if header_only and commit_paths(
         runner,
         root,
-        [manifest_path, unresolved_path],
+        review_paths,
         "Atualiza cabeçalhos HTTP sem mudança de conteúdo",
     ):
         push_head(runner, root, "main")
-    elif commit_paths(runner, root, [unresolved_path], "Atualiza a lista de cartas sem ZIP"):
+    elif commit_paths(
+        runner,
+        root,
+        [unresolved_path, *([cache_file] if cache_file.exists() else [])],
+        "Atualiza a lista de cartas sem ZIP",
+    ):
         push_head(runner, root, "main")
     if not decision.opens and not decision.supersede:
         return 0
@@ -468,7 +542,16 @@ def _write_gaps(root: Path, gaps: list[dict], warning: str | None, url: str | No
     )
 
 
-def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int, compared: bool) -> None:
+def _write_step_summary(
+    gaps: list[dict],
+    warning: str | None,
+    paper_count: int,
+    compared: bool,
+    *,
+    absent: list[str] | None = None,
+    transient: list | None = None,
+    nu_warnings: list[str] | None = None,
+) -> None:
     lines = ["## Catálogo em papel da DHN", ""]
     if not compared:
         lines.append(SKIPPED_COMPARISON)
@@ -491,6 +574,28 @@ def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int,
             )
         if len(gaps) > 40:
             lines.append(f"- … e mais {len(gaps) - 40}. Lista completa em data/edition_gaps.json.")
+    if absent:
+        lines.extend(["", "## Possível cancelamento", ""])
+        lines.append(
+            "Estas cartas publicadas não apareceram no índice da DHN nesta execução. "
+            "Elas continuam no catálogo."
+        )
+        lines.extend(f"- {chart_id}" for chart_id in absent[:40])
+        if len(absent) > 40:
+            lines.append(f"- … e mais {len(absent) - 40}.")
+    if nu_warnings:
+        lines.extend(["", "## Número do BSB diferente do identificador", ""])
+        lines.append("A carta continua publicada. Confira o cabeçalho CHT/NU.")
+        lines.extend(f"- {item}" for item in nu_warnings[:40])
+        if len(nu_warnings) > 40:
+            lines.append(f"- … e mais {len(nu_warnings) - 40}.")
+    if transient:
+        lines.extend(["", "## Erros temporários na DHN", ""])
+        lines.append("A versão já publicada foi mantida.")
+        for item in transient[:40]:
+            lines.append(f"- {item.chart_id}: {item.reason}")
+        if len(transient) > 40:
+            lines.append(f"- … e mais {len(transient) - 40}.")
     text = "\n".join(lines) + "\n"
     print(text, flush=True)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -499,7 +604,15 @@ def _write_step_summary(gaps: list[dict], warning: str | None, paper_count: int,
             handle.write(text)
 
 
-def _select_editions(transport, charts, manifest: dict, download_dir: Path, paper_years: dict | None = None):
+def _select_editions(
+    transport,
+    charts,
+    manifest: dict,
+    download_dir: Path,
+    paper_years: dict | None = None,
+    variant_cache: dict | None = None,
+    nu_warnings: list[str] | None = None,
+):
     """Download variants that differ from the manifest and keep the newest edition."""
     download_dir.mkdir(parents=True, exist_ok=True)
     stored = manifest.get("charts", {})
@@ -507,17 +620,23 @@ def _select_editions(transport, charts, manifest: dict, download_dir: Path, pape
     failures: list[str] = []
     chosen_urls: dict[str, str] = {}
     considered: dict[str, str] = {}
+    if variant_cache is None:
+        variant_cache = {"version": 1, "charts": {}}
+    variant_cache.setdefault("charts", {})
+    notes = nu_warnings if nu_warnings is not None else []
     for group in charts:
         chart_id = group.record.chart_id
         previous = stored.get(chart_id)
+        chart_cache = variant_cache["charts"].setdefault(chart_id, {})
+        if not isinstance(chart_cache, dict):
+            chart_cache = {}
+            variant_cache["charts"][chart_id] = chart_cache
         for remote in group.variants:
             considered[remote.source_url] = chart_id
         options = []
         downloaded: dict[str, PreparedChart] = {}
-        for remote in group.variants:
-            if manifest_has_same_bytes(previous, remote.zip_name, remote.content_length, remote.last_modified):
-                options.append((remote, view_from_manifest(previous)))
-                continue
+
+        def fetch(remote: RemoteFile) -> PreparedChart | None:
             destination = download_dir / f"{chart_id}-{remote.zip_name}"
             try:
                 result = transport.get(remote.source_url)
@@ -526,12 +645,29 @@ def _select_editions(transport, charts, manifest: dict, download_dir: Path, pape
                         f"{chart_id}: HTTP {result.status} ao baixar {remote.source_url}"
                     )
                 destination.write_bytes(result.body)
-                packaged = package_chart(remote, destination)
+                return package_chart(remote, destination)
             except (ChartPackageError, OSError) as exc:
                 failures.append(str(exc))
+                return None
+
+        for remote in group.variants:
+            cached = chart_cache.get(remote.zip_name) if isinstance(chart_cache, dict) else None
+            if _variant_unchanged(cached, remote):
+                options.append((remote, _view_from_variant(cached)))
+                _note_bsb_number(notes, chart_id, cached.get("bsb_number"))
+                continue
+            if manifest_has_same_bytes(previous, remote.zip_name, remote.content_length, remote.last_modified):
+                options.append((remote, view_from_manifest(previous)))
+                chart_cache[remote.zip_name] = _variant_record(remote, previous)
+                _note_bsb_number(notes, chart_id, previous.get("bsb_number"))
+                continue
+            packaged = fetch(remote)
+            if packaged is None:
                 continue
             downloaded[remote.source_url] = packaged
+            chart_cache[remote.zip_name] = _variant_record(remote, manifest_entry(packaged))
             options.append((remote, view_from_bsb(packaged.bsb, packaged.zip_datetime)))
+            _note_bsb_number(notes, chart_id, packaged.bsb.number)
         if not options:
             continue
         best_remote, best_view = choose_newest(options)
@@ -556,6 +692,11 @@ def _select_editions(transport, charts, manifest: dict, download_dir: Path, pape
             continue
         chosen_urls[best_remote.source_url] = chart_id
         packaged = downloaded.get(best_remote.source_url)
+        if packaged is None:
+            packaged = fetch(best_remote)
+            if packaged is not None:
+                chart_cache[best_remote.zip_name] = _variant_record(best_remote, manifest_entry(packaged))
+                _note_bsb_number(notes, chart_id, packaged.bsb.number)
         if packaged is None:
             continue
         prepared.append(packaged)
@@ -663,26 +804,27 @@ def _write_unresolved(root: Path, items: list[Unresolved]) -> Path:
 def upload_new_assets(accepted, manifest, github, published: list[PreparedChart], persist, every: int = CHECKPOINT_EVERY) -> list[str]:
     """Upload charts, record each success in ``manifest``, and checkpoint along the way.
 
-    An asset already on the release with the same byte size is not uploaded again.
-    A failure on one chart does not discard charts already stored in ``manifest``.
+    An asset already on the release with the same SHA-256 is not uploaded again.
+    The same byte size with a different digest is uploaded. A failure on one
+    chart does not discard charts already stored in ``manifest``.
     """
     failures: list[str] = []
-    sizes = github.release_asset_sizes()
+    assets = github.release_assets()
     since_commit = 0
     for chart in accepted:
         asset = _asset_file(chart)
         chart_id = chart.remote.chart_id
         try:
-            size = asset.stat().st_size
-            if sizes.get(asset.name) == size:
+            remote_sha = (assets.get(asset.name) or {}).get("sha256")
+            if remote_sha and remote_sha == chart.sha256:
                 print(
-                    f"{asset.name} já está na release ({size} bytes); sem novo upload.",
+                    f"{asset.name} já está na release (sha256 confere); sem novo upload.",
                     flush=True,
                 )
             else:
                 print(f"Enviando {asset.name}…", flush=True)
                 github.upload_asset(asset)
-                sizes[asset.name] = size
+                assets[asset.name] = {"size": asset.stat().st_size, "sha256": chart.sha256}
             manifest["charts"][chart_id] = manifest_entry(chart)
             published.append(chart)
             since_commit += 1
@@ -704,24 +846,122 @@ def _fatal_github_error(exc: BaseException) -> bool:
     return "GH_TOKEN" in text or "bad credentials" in lowered or "authentication" in lowered
 
 
-def _persist_publication(runner, root, manifest, published, header_only, unresolved, repository, now) -> None:
+def _persist_publication(
+    runner,
+    root,
+    manifest,
+    published,
+    header_only,
+    unresolved,
+    repository,
+    now,
+    rewrite_catalog: bool = False,
+) -> None:
     manifest_path = root / "data" / "manifest.json"
     catalog_path = root / CATALOG_PATH
     unresolved_path = _write_unresolved(root, unresolved)
-    if published or header_only:
+    if published or header_only or rewrite_catalog:
         manifest["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     save_json(manifest_path, manifest)
-    if published or _catalog_missing(catalog_path):
+    if published or rewrite_catalog or _catalog_missing(catalog_path):
         write_catalog(catalog_path, manifest["charts"], repository, now)
-    extra = [path for path in (root / EDITION_GAPS_PATH, cache_path(root)) if path.exists()]
+    extra = [
+        path
+        for path in (root / EDITION_GAPS_PATH, cache_path(root), root / VARIANT_CACHE_PATH)
+        if path.exists()
+    ]
     if commit_paths(
         runner,
         root,
         [manifest_path, catalog_path, unresolved_path, *extra],
-        _commit_message(published, header_only),
+        _commit_message(published, header_only, removed=rewrite_catalog and not published),
     ):
         push_head(runner, root, "main")
         print(f"Manifesto gravado em main ({len(published)} carta(s) nesta execução).", flush=True)
+
+
+def heal_release_digests(root: Path, manifest: dict, github: GitHub, transport) -> None:
+    """Re-upload release assets whose digest is not the SHA-256 stored in the manifest."""
+    assets = github.release_assets()
+    download_dir = root / "run" / "downloads"
+    for chart_id, entry in sorted(manifest.get("charts", {}).items()):
+        name = entry.get("zip_filename")
+        expected = str(entry.get("sha256") or "").lower()
+        zip_name = str(entry.get("zip_name") or "")
+        source = str(entry.get("source_url") or "")
+        if not name or not expected:
+            continue
+        remote_sha = (assets.get(name) or {}).get("sha256")
+        if remote_sha and remote_sha == expected:
+            continue
+        try:
+            require_raster_url(source, zip_name)
+        except ChartPackageError as exc:
+            print(f"AVISO: {chart_id}: não republico o asset ({exc}).", flush=True)
+            continue
+        print(f"Republicando {name}: o SHA-256 da Release difere do manifesto.", flush=True)
+        try:
+            result = transport.get(source)
+            if getattr(result, "status", 0) != 200:
+                print(f"AVISO: {chart_id}: HTTP {getattr(result, 'status', '?')} ao republicar.", flush=True)
+                continue
+            body = result.body
+            if hashlib.sha256(body).hexdigest() != expected:
+                print(
+                    f"AVISO: {chart_id}: o ZIP atual da DHN não confere com o manifesto. Sem upload.",
+                    flush=True,
+                )
+                continue
+            raw_path = materialize_verified_zip(download_dir, zip_name, body, expected)
+            asset = confined_zip_path(download_dir, name)
+            if asset != raw_path:
+                shutil.copyfile(raw_path, asset)
+            github.upload_asset(asset)
+        except (ChartPackageError, OSError) as exc:
+            print(f"AVISO: {chart_id}: {exc}", flush=True)
+
+
+def _variant_unchanged(cached: dict | None, remote: RemoteFile) -> bool:
+    if not isinstance(cached, dict) or not cached.get("sha256"):
+        return False
+    return (
+        cached.get("content_length") == remote.content_length
+        and (cached.get("last_modified") or None) == (remote.last_modified or None)
+        and (cached.get("etag") or None) == (remote.etag or None)
+    )
+
+
+def _view_from_variant(cached: dict) -> EditionView:
+    edition = cached.get("source_edition")
+    return EditionView(
+        source_edition=edition if isinstance(edition, int) else None,
+        source_date=cached.get("source_date"),
+        ntm_edition=cached.get("ntm_edition"),
+        ntm_date=cached.get("ntm_date"),
+        last_modified=parse_http_datetime(cached.get("last_modified")),
+    )
+
+
+def _variant_record(remote: RemoteFile, entry: dict) -> dict:
+    return {
+        "content_length": remote.content_length,
+        "last_modified": remote.last_modified,
+        "etag": remote.etag,
+        "sha256": entry.get("sha256"),
+        "source_edition": entry.get("source_edition"),
+        "source_date": entry.get("source_date"),
+        "ntm_edition": entry.get("ntm_edition"),
+        "ntm_date": entry.get("ntm_date"),
+        "bsb_number": entry.get("bsb_number"),
+    }
+
+
+def _note_bsb_number(warnings: list[str], chart_id: str, number) -> None:
+    if bsb_number_matches(chart_id, number):
+        return
+    text = f"{chart_id} (BSB NU={number})"
+    if text not in warnings:
+        warnings.append(text)
 
 
 def _asset_file(chart: PreparedChart) -> Path:
@@ -736,7 +976,9 @@ def _catalog_missing(path: Path) -> bool:
     return not path.exists()
 
 
-def _commit_message(accepted: list[PreparedChart], header_only: list[PreparedChart]) -> str:
+def _commit_message(accepted: list[PreparedChart], header_only: list[PreparedChart], removed: bool = False) -> str:
+    if not accepted and removed:
+        return "Atualiza o catálogo após retirar cartas duplicadas"
     if not accepted and header_only:
         return "Atualiza cabeçalhos HTTP sem mudança de conteúdo"
     ids = ", ".join(chart.remote.chart_id for chart in accepted[:12])

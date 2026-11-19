@@ -174,7 +174,7 @@ def test_upload_keeps_finished_charts_when_a_later_one_fails(tmp_path: Path):
         def __init__(self):
             self.uploads: list[str] = []
 
-        def release_asset_sizes(self):
+        def release_assets(self):
             return {}
 
         def upload_asset(self, path: Path):
@@ -199,7 +199,7 @@ def test_upload_keeps_finished_charts_when_a_later_one_fails(tmp_path: Path):
     assert len(failures) == 1 and "1104" in failures[0]
 
 
-def test_upload_skips_a_release_asset_of_the_same_size(tmp_path: Path):
+def test_upload_skips_only_when_the_release_sha_matches(tmp_path: Path):
     from cartas_raster.cli import upload_new_assets
 
     remote, data = _remote("3332")
@@ -207,19 +207,33 @@ def test_upload_skips_a_release_asset_of_the_same_size(tmp_path: Path):
     path.write_bytes(data)
     prepared = package_chart(remote, path)
 
-    class Publisher:
-        def release_asset_sizes(self):
-            return {"BR_3332.zip": prepared.size}
+    class Same:
+        def release_assets(self):
+            return {"BR_3332.zip": {"size": prepared.size, "sha256": prepared.sha256}}
 
         def upload_asset(self, path: Path):
             raise AssertionError(path.name)
 
     manifest: dict = {"charts": {}}
     published = []
-    failures = upload_new_assets([prepared], manifest, Publisher(), published, lambda: None, every=20)
+    failures = upload_new_assets([prepared], manifest, Same(), published, lambda: None, every=20)
     assert failures == []
     assert manifest["charts"]["3332"]["sha256"] == prepared.sha256
-    assert published == [prepared]
+
+    class DifferentSizeSameBytes:
+        def __init__(self):
+            self.uploads: list[str] = []
+
+        def release_assets(self):
+            return {"BR_3332.zip": {"size": prepared.size, "sha256": "0" * 64}}
+
+        def upload_asset(self, path: Path):
+            self.uploads.append(path.name)
+
+    again = DifferentSizeSameBytes()
+    failures = upload_new_assets([prepared], {"charts": {}}, again, [], lambda: None, every=20)
+    assert failures == []
+    assert again.uploads == ["BR_3332.zip"]
 
 
 def test_headers_skip_a_redownload_until_they_change():

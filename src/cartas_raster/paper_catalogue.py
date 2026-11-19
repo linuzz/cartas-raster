@@ -219,12 +219,19 @@ def refresh_paper_catalogue(transport, url: str | None, cache_path: Path) -> tup
         return {}, warning
 
 
-def pdf_to_text(pdf_path: Path) -> str:
-    completed = subprocess.run(
-        ["pdftotext", "-layout", str(pdf_path), "-"],
-        check=False,
-        capture_output=True,
-    )
+PDFTOTEXT_TIMEOUT = 120
+
+
+def pdf_to_text(pdf_path: Path, timeout: float = PDFTOTEXT_TIMEOUT) -> str:
+    try:
+        completed = subprocess.run(
+            ["pdftotext", "-layout", str(pdf_path), "-"],
+            check=False,
+            capture_output=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"pdftotext excedeu {int(timeout)}s") from exc
     if completed.returncode != 0:
         detail = completed.stderr.decode("utf-8", errors="replace").strip()
         raise RuntimeError(detail or "pdftotext falhou")
