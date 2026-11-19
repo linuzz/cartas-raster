@@ -29,6 +29,41 @@ _CHUNK = 64 * 1024
 MAX_UNCOMPRESSED_BYTES = 2 * 1024 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 100
 _CHART_SUFFIXES = {".bsb", ".kap"}
+# Harmless companions that real DHN ZIPs already ship (thumbnail caches,
+# a GeoTIFF beside the KAP, Windows/macOS junk). Anything else is rejected:
+# a denylist would let a new unknown type through, including a script whose
+# suffix we had not thought of. Path checks and the size/ratio caps still
+# apply to these extras.
+_BENIGN_SUFFIXES = {
+    ".db",
+    ".tif",
+    ".tiff",
+    ".tfw",
+    ".txt",
+    ".pdf",
+    ".htm",
+    ".html",
+    ".jpg",
+    ".png",
+    ".xml",
+    ".ini",
+}
+_BENIGN_BASENAMES = {".ds_store", "thumbs.db"}
+_EXECUTABLE_SUFFIXES = {
+    ".exe",
+    ".bat",
+    ".cmd",
+    ".com",
+    ".scr",
+    ".js",
+    ".vbs",
+    ".ps1",
+    ".sh",
+    ".dll",
+    ".lnk",
+    ".jar",
+    ".msi",
+}
 
 
 class NotAChartZip(Exception):
@@ -48,8 +83,9 @@ def inspect_zip(
     chart_payloads = _read_chart_members(
         archive, max_uncompressed=max_uncompressed, max_ratio=max_ratio
     )
-    if not chart_payloads:
-        raise NotAChartZip("o ZIP não contém arquivo .BSB nem .KAP")
+    suffixes = {PurePosixPath(name).suffix.lower() for name, _payload in chart_payloads}
+    if ".bsb" not in suffixes or ".kap" not in suffixes:
+        raise NotAChartZip("o ZIP precisa de pelo menos um .BSB e um .KAP")
     # The .BSB index carries CHT/CED/NTM for the whole chart. Fall back to KAP.
     ordered = sorted(chart_payloads, key=lambda item: (not item[0].lower().endswith(".bsb"), item[0]))
     merged: dict[str, dict[str, str]] = {}
@@ -84,10 +120,15 @@ def _read_chart_members(
     """
     total = 0
     charts: list[tuple[str, bytes]] = []
+    ignored: list[str] = []
     for info in archive.infolist():
         _reject_unsafe_member(info, max_ratio=max_ratio)
         if _is_directory(info):
             continue
+        normalized = info.filename.replace("\\", "/")
+        kind = _member_kind(normalized)
+        if kind == "rejected":
+            raise NotAChartZip(f"tipo não permitido no ZIP: {info.filename}")
         remaining = max_uncompressed - total
         if info.file_size > remaining:
             raise NotAChartZip(
@@ -97,8 +138,12 @@ def _read_chart_members(
         total += len(payload)
         if total > max_uncompressed:
             raise NotAChartZip(f"tamanho descomprimido passa de {max_uncompressed} bytes")
-        if PurePosixPath(info.filename.replace("\\", "/")).suffix.lower() in _CHART_SUFFIXES:
+        if kind == "chart":
             charts.append((info.filename, payload))
+        else:
+            ignored.append(info.filename)
+    if ignored:
+        print(f"Extras ignorados no ZIP: {', '.join(ignored)}.", flush=True)
     return charts
 
 
@@ -116,14 +161,27 @@ def _reject_unsafe_member(info: zipfile.ZipInfo, *, max_ratio: float) -> None:
         raise NotAChartZip(f"caminho com .. no ZIP: {name}")
     if _is_directory(info):
         return
-    suffix = PurePosixPath(normalized).suffix.lower()
-    if suffix not in _CHART_SUFFIXES:
-        raise NotAChartZip(f"extensão não permitida no ZIP: {name}")
     ratio = _compression_ratio(info)
     if ratio > max_ratio:
         raise NotAChartZip(
             f"taxa de compressão {ratio:.0f} acima de {max_ratio:.0f} em {name}"
         )
+
+
+def _member_kind(normalized: str) -> str:
+    """``chart``, ``benign`` or ``rejected``. Path safety is checked earlier."""
+    parts = [part for part in normalized.split("/") if part not in ("", ".")]
+    if any(part.lower() == "__macosx" for part in parts):
+        return "benign"
+    base = parts[-1].lower() if parts else ""
+    if base in _BENIGN_BASENAMES:
+        return "benign"
+    suffix = PurePosixPath(base).suffix.lower()
+    if suffix in _CHART_SUFFIXES:
+        return "chart"
+    if suffix in _EXECUTABLE_SUFFIXES or suffix not in _BENIGN_SUFFIXES:
+        return "rejected"
+    return "benign"
 
 
 def _read_member(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limit: int) -> bytes:
