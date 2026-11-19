@@ -1,8 +1,9 @@
 # Catálogo não oficial das cartas raster da DHN para o OpenCPN
 
 Catalogação não oficial das cartas raster da DHN para o plugin **Chart Downloader**
-(`chartdldr_pi`) do OpenCPN. Este projeto não tem vínculo com a Marinha do Brasil
-nem com a Diretoria de Hidrografia e Navegação.
+(`chartdldr_pi`) do OpenCPN. É um projeto amador, feito por uma pessoa, sem vínculo
+com a Marinha do Brasil nem com a Diretoria de Hidrografia e Navegação. O catálogo
+é apenas para uso acadêmico.
 
 O pipeline, toda semana:
 
@@ -16,11 +17,11 @@ Os binários das cartas **não entram no Git** (limite de 100 MB por arquivo). C
 
 ## Aviso legal
 
-Este é um projeto não oficial. Não há vínculo com a Marinha do Brasil nem com a DHN.
+Este é um projeto amador, feito por uma pessoa, e não oficial. Não há vínculo com a Marinha do Brasil nem com a DHN.
 
-Não há garantia de nenhum tipo. O catálogo não serve para navegar no lugar das cartas oficiais. As cartas oficiais são as publicadas pela DHN, conforme a NORMAM-511/DHN. A fonte oficial é o site da DHN: <https://www.marinha.mil.br/chm>.
+Não há garantia de nenhum tipo. O catálogo é apenas para uso acadêmico. Não se destina a uso comercial e não serve para navegar no lugar das cartas oficiais. As cartas oficiais são as publicadas pela DHN, conforme a NORMAM-511/DHN. A fonte oficial é o site da DHN: <https://www.marinha.mil.br/chm>.
 
-O uso previsto é não comercial. O código está sob a licença MIT; as cartas, os metadados da DHN e o certificado empacotado não estão cobertos por essa licença. Veja [LICENSE](LICENSE).
+O código está sob a licença MIT; as cartas, os metadados da DHN e o certificado empacotado não estão cobertos por essa licença. Veja [LICENSE](LICENSE).
 
 Os arquivos GeoTIFF oficiais não entram neste catálogo. Se a DHN pedir a retirada de algum conteúdo, ele sai do catálogo.
 

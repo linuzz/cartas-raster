@@ -14,6 +14,7 @@ OpenCPN ``plugins/chartdldr_pi/src/chartcatalog.cpp`` (master):
 """
 
 from datetime import datetime, timezone
+from pathlib import Path
 
 from cartas_raster.catalog import render_catalog, render_pages_index
 from cartas_raster.chartdldr import assert_plugin_compatible, parse_catalog, wx_parse_date
@@ -137,24 +138,36 @@ def test_empty_catalog_is_valid():
     assert parsed.charts == []
 
 
-def test_pages_index_lists_the_check_date_sha_and_source():
-    page = render_pages_index(
-        {
-            "1404": {
-                "sha256": "abc123",
-                "source_url": "https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/1404.zip",
-            }
-        },
-        datetime(2026, 11, 19, 12, 0, tzinfo=timezone.utc),
-    )
+def test_pages_index_keeps_the_check_date_and_the_catalogue_link():
+    page = render_pages_index(datetime(2026, 11, 19, 12, 0, tzinfo=timezone.utc))
+    assert "projeto amador" in page.lower()
+    assert "apenas para uso acadêmico" in page
     assert "Catalogação não oficial" in page
     assert "2026-11-19 12:00:00 UTC" in page
-    assert "abc123" in page
-    assert "1404.zip" in page
+    assert "BR_RNCProdCat.xml" in page
+    assert "Cartas no manifesto" not in page
+    assert "SHA-256" not in page
     assert "NORMAM-511/DHN" in page
-    assert "não estão cobertos pela licença MIT" in page
-    lowered = page.lower()
-    assert "redistrib" not in lowered
-    assert "republic" not in lowered
-    assert "espelho" not in lowered
     assert "@" not in page
+    _assert_public_text_avoids_distribution_words(page)
+
+
+def _assert_public_text_avoids_distribution_words(text: str) -> None:
+    lowered = text.lower()
+    for banned in ("redistrib", "republic", "espelho", "distribu"):
+        assert banned not in lowered, banned
+
+
+def test_public_texts_do_not_describe_the_project_as_distribution():
+    root = Path(__file__).resolve().parents[1]
+    chunks = [
+        (root / "README.md").read_text(encoding="utf-8"),
+        (root / "docs" / "index.html").read_text(encoding="utf-8"),
+        (root / "src" / "cartas_raster" / "catalog.py").read_text(encoding="utf-8"),
+        (root / "src" / "cartas_raster" / "github_io.py").read_text(encoding="utf-8"),
+    ]
+    license_text = (root / "LICENSE").read_text(encoding="utf-8")
+    note = license_text.split("Nota de escopo", 1)[-1]
+    chunks.append(note)
+    for chunk in chunks:
+        _assert_public_text_avoids_distribution_words(chunk)
