@@ -12,6 +12,7 @@ OVERRIDES_PATH = Path("data/source_overrides.json")
 CATALOG_PATH = Path("docs/BR_RNCProdCat.xml")
 CATALOGUE_PDF_CACHE = Path("data/catalogue_pdf.json")
 EDITION_GAPS_PATH = Path("data/edition_gaps.json")
+VARIANT_CACHE_PATH = Path("data/variant_cache.json")
 PROPOSALS_DIR = Path("proposals")
 
 
@@ -33,6 +34,21 @@ def empty_manifest() -> dict:
 
 def empty_rejected() -> dict:
     return {"version": 1, "charts": {}}
+
+
+def empty_variant_cache() -> dict:
+    return {"version": 1, "charts": {}}
+
+
+def load_variant_cache(root: Path) -> dict:
+    payload = load_json(root / VARIANT_CACHE_PATH, empty_variant_cache())
+    if not isinstance(payload, dict):
+        return empty_variant_cache()
+    payload.setdefault("version", 1)
+    charts = payload.get("charts")
+    if not isinstance(charts, dict):
+        payload["charts"] = {}
+    return payload
 
 
 def load_manifest(root: Path) -> dict:

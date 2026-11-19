@@ -64,7 +64,7 @@ Mudança de conteúdo vira upload na Release `cartas` e atualização do `data/m
 
 Uma edição que já foi rejeitada no modo `review` (está em `data/rejected.json`) continua de fora até o arquivo na DHN mudar, mesmo depois de voltar para `auto`. Apague a entrada correspondente em `rejected.json` se quiser publicar essa edição mesmo assim.
 
-O manifesto é gravado em `main` a cada 20 cartas enviadas. Se a execução cair no meio, o que já foi para a Release permanece. A execução seguinte não envia de novo um asset com o mesmo nome e o mesmo tamanho, e segue a partir do manifesto.
+O manifesto é gravado em `main` a cada 20 cartas enviadas. Se a execução cair no meio, o que já foi para a Release permanece. A execução seguinte não envia de novo um asset cujo SHA-256 na Release (`digest`) já é o do manifesto. O mesmo tamanho com outro conteúdo é enviado outra vez. Se o digest divergir, o workflow baixa de novo o ZIP da DHN, confere o SHA-256 do manifesto e republica.
 
 ### `review`
 
@@ -98,7 +98,12 @@ Conferido no site oficial:
 
 - **Índice:** `https://idem.marinha.mil.br/geonetwork/` — busca JSON `srv/por/q` por “Carta Nautica Raster”. Em novembro de 2026 o índice anunciava 530 conjuntos, com formato `KAP/BSB` e link “Download da Carta Náutica - Raster”.
 - **Arquivo:** `https://assets.marinha.mil.br/chm/sites/www.marinha.mil.br.chm/files/raster/<arquivo>.zip` (o endereço em `www.marinha.mil.br` redireciona para esse host). O ZIP já contém `.BSB` e `.KAP`. A edição usada no catálogo é a do cabeçalho BSB (`CED` / `NTM`), não só a data do metadado.
-- **Nome do arquivo:** a DHN pode deixar várias gerações no ar ao mesmo tempo: `<número>.zip`, `<número>_0.zip`, `<número>_1.zip`, e por aí vai. O pipeline consulta todas com `HEAD` (para no primeiro sufixo ausente, mas sempre olha `.zip` e `_0`) e fica com a edição mais nova do cabeçalho BSB (`CED/SE`, depois a data `ED`, depois o Aviso `NTM`). A data do arquivo só desempata. Uma edição mais antiga nunca substitui a que já está publicada. O asset anterior sai da Release quando o manifesto deixa de apontar para ele.
+- **Nome do arquivo:** a DHN pode deixar várias gerações no ar ao mesmo tempo: `<número>.zip`, `<número>_0.zip`, `<número>_1.zip`, e por aí vai. O pipeline consulta todas com `HEAD` (para no primeiro sufixo ausente, mas sempre olha `.zip` e `_0`) e fica com a edição mais nova do cabeçalho BSB (`CED/SE`, depois a data `ED`, depois o ano do Aviso `NTM` e só então o número). `12.2019` e `2019-12` são o mesmo aviso; `3.2020` é mais novo que `12.2019`. A data do arquivo só desempata. Uma edição mais antiga nunca substitui a que já está publicada. Metadado e SHA das variantes já conferidas ficam em `data/variant_cache.json`, para não baixar de novo um ZIP cujo `HEAD` não mudou.
+- **Resposta instável:** HTTP 403, 429 ou 5xx, e falha de rede, são erro temporário. O cliente espera (`Retry-After`, no máximo 60 s) e tenta de novo. Se continuar falhando, a carta entra em `data/unresolved.json` como `erro temporário` e a versão já publicada permanece. Isso não é tratado como “arquivo inexistente”.
+- **Catálogo em papel:** o PDF da DHN só compara anos. `pdftotext` tem 120 s de limite. Se o PDF falhar ou estourar o tempo, a comparação é pulada e nenhuma carta é removida.
+- **Avisos que não removem carta:** carta publicada que sumiu do índice da DHN (possível cancelamento) e número `CHT/NU` do BSB diferente do identificador. Os dois aparecem no resumo do job; o catálogo não muda por causa deles.
+- **Retirada de carta duplicada:** o XML do catálogo é regravado antes de apagar o asset. No GitHub Actions a exclusão só roda depois que o Pages publicou esse XML.
+- **Agendamento:** cada execução grava `data/last_checked.txt`. Esse commit mantém o workflow semanal ativo; o GitHub desliga agendamentos depois de 60 dias sem atividade no repositório.
 - **Páginas HTML do CHM** (`www.marinha.mil.br/chm/dados-do-segnav-cartas-raster/...`) ficam atrás de um desafio do Cloudflare a partir de redes de datacenter. O workflow não depende delas: confirma o ZIP com `HEAD`. Se a página estiver acessível, o link do arquivo tem prioridade.
 - O certificado de `*.marinha.mil.br` não envia o intermediário (AC Defesa / GlobalSign). O cliente TLS inclui esse intermediário e continua verificando a cadeia até a raiz pública. O certificado intermediário empacotado vale até agosto de 2029.
 

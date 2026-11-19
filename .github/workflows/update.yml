@@ -97,6 +97,7 @@ jobs:
           MIN_RESOLVED_RATIO: ${{ vars.MIN_RESOLVED_RATIO }}
           RUN_MODE: ${{ steps.mode.outputs.mode }}
           DRY_RUN: ${{ inputs.dry_run }}
+          DEFER_ASSET_DELETION: "1"
         run: |
           set -eu
           git config user.name "github-actions[bot]"
@@ -122,6 +123,31 @@ jobs:
         with:
           path: docs
 
+      - name: Registrar a verificação
+        if: always()
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry-run: sem registro de verificação."
+            exit 0
+          fi
+          if [ "$(git branch --show-current)" != "main" ]; then
+            echo "Fora de main; sem registro de verificação."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p data
+          date -u +%Y-%m-%dT%H:%M:%SZ > data/last_checked.txt
+          git add data/last_checked.txt
+          if git diff --cached --quiet; then
+            echo "Registro já estava em dia."
+            exit 0
+          fi
+          git commit -m "Registra a última verificação do catálogo"
+          git push origin HEAD:main
+
   deploy:
     needs: update
     if: always() && needs.update.outputs.pages == 'true'
@@ -136,3 +162,24 @@ jobs:
       - name: Publicar o catálogo
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  cleanup-assets:
+    needs: [update, deploy]
+    if: needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Remover assets que o catálogo já não cita
+        run: |
+          python -m pip install -e .
+          python -m cartas_raster.cli delete-orphans

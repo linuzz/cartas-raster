@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -59,12 +60,12 @@ def is_newer(candidate: EditionView, current: EditionView) -> bool:
 
 
 def edition_key(view: EditionView) -> tuple:
-    """Order: source edition, edition date, NTM notice, NTM date, file time."""
+    """Order: source edition, edition date, NTM year then number, NTM date, file time."""
     se = view.source_edition if isinstance(view.source_edition, int) else -1
     return (
         se,
         parse_mdy(view.source_date),
-        ntm_numbers(view.ntm_edition),
+        ntm_key(view.ntm_edition),
         parse_mdy(view.ntm_date),
         _aware(view.last_modified),
     )
@@ -240,6 +241,43 @@ def ntm_numbers(value: str | None) -> tuple[int, ...]:
     if current:
         numbers.append(int(current))
     return tuple(numbers)
+
+
+def ntm_key(value: str | None) -> tuple[int, int]:
+    """``(year, number)`` for both ``AAAA-NN`` and ``NN.AAAA``.
+
+    ``12.2019`` must not sort ahead of ``3.2020``. A four-digit year in
+    1900–2100 is the year; the other component is the notice number.
+    """
+    numbers = ntm_numbers(value)
+    if not numbers:
+        return (0, 0)
+    if len(numbers) == 1:
+        number = numbers[0]
+        if _is_year(number):
+            return (number, 0)
+        return (0, number)
+    first, second = numbers[0], numbers[1]
+    if _is_year(first) and not _is_year(second):
+        return (first, second)
+    if _is_year(second) and not _is_year(first):
+        return (second, first)
+    return (first, second)
+
+
+def _is_year(number: int) -> bool:
+    return 1900 <= number <= 2100
+
+
+def bsb_number_matches(chart_id: str, bsb_number: str | None) -> bool:
+    """True when the header has no number or it is the same id. A mismatch only warns."""
+    if bsb_number is None:
+        return True
+    left = re.sub(r"[^A-Za-z0-9]", "", str(chart_id)).upper()
+    right = re.sub(r"[^A-Za-z0-9]", "", str(bsb_number)).upper()
+    if not right:
+        return True
+    return left == right
 
 
 def parse_http_datetime(value: str | None) -> datetime | None:

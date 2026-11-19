@@ -52,6 +52,17 @@ class Transport(Protocol):
     def get(self, url: str): ...
 
 
+class TransientSource(Exception):
+    """A HEAD failed in a way that must not be recorded as 'file missing'."""
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
+TRANSIENT_HTTP = {403, 429, 500, 502, 503, 504}
+
+
 @dataclass
 class ChartVariants:
     record: IndexRecord
@@ -352,12 +363,25 @@ class DhnCatalog:
         for index, record in enumerate(records, start=1):
             try:
                 found, used = self._probe_record(record)
-            except (TimeoutError, OSError, urllib.error.URLError) as exc:
+            except TransientSource as exc:
+                print(f"AVISO: carta {record.chart_id}: {exc.reason}", flush=True)
                 unresolved.append(
                     Unresolved(
                         chart_id=record.chart_id,
                         title=record.title,
-                        reason=f"falha de rede ao consultar as variantes: {exc}",
+                        reason=exc.reason,
+                        page_url=record.page_url,
+                    )
+                )
+                continue
+            except (TimeoutError, OSError, urllib.error.URLError) as exc:
+                reason = f"erro temporário de rede ao consultar as variantes: {exc}"
+                print(f"AVISO: carta {record.chart_id}: {reason}", flush=True)
+                unresolved.append(
+                    Unresolved(
+                        chart_id=record.chart_id,
+                        title=record.title,
+                        reason=reason,
                         page_url=record.page_url,
                     )
                 )
@@ -415,7 +439,12 @@ class DhnCatalog:
 
     def _head_zip(self, record: IndexRecord, zip_name: str) -> RemoteFile | None:
         url = RASTER_BASE + zip_name
-        result = self.transport.head(url)
+        try:
+            result = self.transport.head(url)
+        except (TimeoutError, OSError, urllib.error.URLError) as exc:
+            raise TransientSource(f"erro temporário de rede ao consultar {zip_name}: {exc}") from exc
+        if result.status in TRANSIENT_HTTP:
+            raise TransientSource(f"erro temporário HTTP {result.status} em {zip_name}")
         if result.status != 200:
             return None
         content_type = result.headers.get("content-type", "")
