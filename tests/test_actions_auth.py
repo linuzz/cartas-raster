@@ -88,7 +88,7 @@ def test_deploy_jobs_do_not_need_gh():
 
 
 def test_run_scripts_do_not_interpolate_expressions():
-    for name in ("update.yml", "review.yml", "ci.yml"):
+    for name in ("update.yml", "review.yml", "ci.yml", "pages.yml"):
         text = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
         for script in _run_scripts(text):
             assert "${{" not in script, name
