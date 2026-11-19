@@ -43,7 +43,9 @@ O código já pede as permissões nos workflows. Estas opções do repositório 
    Escolha **GitHub Actions** e salve.
    O catálogo passa a existir em
    `https://linuzz.github.io/cartas-raster/BR_RNCProdCat.xml`
-   depois da primeira execução que publica o Pages (modo `auto`, ou o merge de um PR no modo `review`).
+   depois da primeira execução que publica o Pages (modo `auto`, o merge de um PR no modo `review`, ou o workflow **Publicar página do catálogo**).
+
+   Esse workflow só relê `data/manifest.json` e regenera `docs/index.html` e `docs/BR_RNCProdCat.xml`. Não consulta a DHN, não baixa ZIP, não mexe na Release e não apaga assets. Roda manualmente, ou quando muda `docs/` ou o gerador da página. Usa o mesmo grupo de concorrência do deploy da atualização, para os dois não publicarem ao mesmo tempo.
 
 4. **Settings → Secrets and variables → Actions → Variables**
    Crie a variável de repositório **`UPDATE_MODE`** com o valor `auto` ou `review`.

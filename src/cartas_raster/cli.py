@@ -98,6 +98,10 @@ def main(argv: list[str] | None = None) -> int:
     orphans.add_argument("--root", type=Path, default=Path.cwd())
     orphans.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY))
 
+    pages = sub.add_parser("render-pages", help="Gera a página e o XML a partir do manifesto local")
+    pages.add_argument("--root", type=Path, default=Path.cwd())
+    pages.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPOSITORY))
+
     args = parser.parse_args(argv)
     try:
         if args.command == "run":
@@ -112,6 +116,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "delete-orphans":
             return delete_orphans(args)
+        if args.command == "render-pages":
+            return render_pages(args)
     except SourceLayoutError as exc:
         print(f"ERRO DE LAYOUT: {exc}", file=sys.stderr)
         return 2
@@ -330,6 +336,37 @@ def _preflight_orphan_cleanup(github: GitHub, charts: dict, previous_chart_count
         raise
     preview = ", ".join(names) if names else "nenhum"
     print(f"Limpeza de órfãos prevista: {len(names)} asset(s): {preview}.", flush=True)
+
+
+def render_pages(args) -> int:
+    """Rebuild the Pages files from the manifest already in the repository.
+
+    Does not contact the DHN, change the release, or delete assets.
+    """
+    root: Path = args.root.resolve()
+    manifest = load_manifest(root)
+    checked = _pages_checked_at(root)
+    write_catalog(root / CATALOG_PATH, manifest["charts"], args.repository, checked)
+    write_pages_index(root / "docs" / "index.html", manifest["charts"], checked)
+    print(
+        f"Página do catálogo gerada com {len(manifest.get('charts', {}))} cartas, "
+        "só a partir do manifesto local.",
+        flush=True,
+    )
+    return 0
+
+
+def _pages_checked_at(root: Path) -> datetime:
+    path = root / "data" / "last_checked.txt"
+    if path.exists():
+        text = path.read_text(encoding="utf-8").strip()
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError:
+            pass
+    return datetime.now(timezone.utc)
 
 
 def delete_orphans(args) -> int:
