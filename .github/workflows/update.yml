@@ -2,8 +2,8 @@ name: Atualizar cartas raster
 
 on:
   schedule:
-    # Segunda-feira, 06:00 UTC. Uma vez por semana.
-    - cron: "0 6 * * 1"
+    # Segunda-feira, 20:00 BRT (23:00 UTC). Uma vez por semana.
+    - cron: "0 23 * * 1"
   workflow_dispatch:
     inputs:
       update_mode:
